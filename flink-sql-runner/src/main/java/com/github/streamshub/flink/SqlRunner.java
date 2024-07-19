@@ -1,0 +1,142 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.github.streamshub.flink;
+
+import org.apache.flink.table.api.EnvironmentSettings;
+import org.apache.flink.table.api.TableEnvironment;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/** Parses and executes SQL statements. */
+public class SqlRunner {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SqlRunner.class);
+
+    private static final String STATEMENT_DELIMITER = ";"; // a statement should end with `;`
+    private static final String LINE_DELIMITER = "\n";
+
+    private static final String COMMENT_PATTERN = "(--.*)|(((\\/\\*)+?[\\w\\W]+?(\\*\\/)+))";
+
+    private static final Pattern SET_STATEMENT_PATTERN =
+            Pattern.compile("SET\\s+'(\\S+)'\\s+=\\s+'(.*)';", Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern STATEMENT_SET_PATTERN =
+            Pattern.compile("(EXECUTE STATEMENT SET BEGIN.*?END;)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+
+    private static final String BEGIN_CERTIFICATE = "-----BEGIN CERTIFICATE-----";
+    private static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
+    private static final String ESCAPED_BEGIN_CERTIFICATE = "======BEGIN CERTIFICATE=====";
+    private static final String ESCAPED_END_CERTIFICATE = "=====END CERTIFICATE=====";
+
+    private static final String BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----";
+    private static final String END_PRIVATE_KEY = "-----END PRIVATE KEY-----";
+    private static final String ESCAPED_BEGIN_PRIVATE_KEY  = "======BEGIN PRIVATE KEY=====";
+    private static final String ESCAPED_END_PRIVATE_KEY = "=====END PRIVATE KEY=====";
+
+    public static void main(String[] args) throws Exception {
+        if (args.length != 1) {
+            throw new Exception("Exactly 1 argument is expected.");
+        }
+
+        var statements = parseStatements(args[0]);
+
+        EnvironmentSettings settings = EnvironmentSettings
+                .newInstance()
+                .inStreamingMode()
+                .build();
+        var tableEnv = TableEnvironment.create(settings);
+        LOG.debug("TableEnvironment config: " + tableEnv.getConfig().toMap());
+
+        for (String statement : statements) {
+            var processedStatement = interpolateSecrets(statement);
+            Matcher setMatcher = SET_STATEMENT_PATTERN.matcher(statement.trim());
+
+            if (setMatcher.matches()) {
+                // Handle SET statements
+                String key = setMatcher.group(1);
+                String value = setMatcher.group(2);
+                LOG.debug("Setting configurations:\n{}={}", key, value);
+                tableEnv.getConfig().getConfiguration().setString(key, value);
+            } else {
+                LOG.info("Executing:\n{}", statement);
+                tableEnv.executeSql(processedStatement);
+            }
+        }
+    }
+
+    private static List<String> parseStatements(String rawStatements) {
+        var formatted = formatSqlStatements(rawStatements.trim());
+
+        var statements = new ArrayList<String>();
+        StringBuilder current = new StringBuilder();
+        Matcher matcher = STATEMENT_SET_PATTERN.matcher(formatted);
+
+        String statementSet = "";
+        String otherStatements = formatted;
+
+        if (matcher.find()) {
+            statementSet = matcher.group(1);
+            otherStatements = formatted.replace(statementSet, "").trim();
+        }
+
+        for (char c : otherStatements.toCharArray()) {
+            if (c == STATEMENT_DELIMITER.charAt(0)) {
+                current.append(c);
+                statements.add(current.toString().trim());
+                current = new StringBuilder();
+            } else {
+                current.append(c);
+            }
+        }
+
+        if (statementSet.length() > 0) {
+            statements.add(statementSet);
+        }
+
+        return statements;
+    }
+
+    private static String interpolateSecrets(String statement) {
+        return KubernetesSecretReplacer.replaceSecrets(statement)
+                .replaceAll(BEGIN_CERTIFICATE, ESCAPED_BEGIN_CERTIFICATE)
+                .replaceAll(END_CERTIFICATE, ESCAPED_END_CERTIFICATE)
+                .replaceAll(BEGIN_PRIVATE_KEY, ESCAPED_BEGIN_PRIVATE_KEY)
+                .replaceAll(END_PRIVATE_KEY, ESCAPED_END_PRIVATE_KEY)
+                .replaceAll(COMMENT_PATTERN, "")
+                .replaceAll(ESCAPED_BEGIN_CERTIFICATE, BEGIN_CERTIFICATE)
+                .replaceAll(ESCAPED_END_CERTIFICATE, END_CERTIFICATE)
+                .replaceAll(ESCAPED_BEGIN_PRIVATE_KEY, BEGIN_PRIVATE_KEY)
+                .replaceAll(ESCAPED_END_PRIVATE_KEY, END_PRIVATE_KEY);
+    }
+
+    private static String formatSqlStatements(String content) {
+        StringBuilder formatted = new StringBuilder();
+        formatted.append(content);
+        if (!content.endsWith(STATEMENT_DELIMITER)) {
+            formatted.append(STATEMENT_DELIMITER);
+        }
+        formatted.append(LINE_DELIMITER);
+        return formatted.toString();
+    }
+}
