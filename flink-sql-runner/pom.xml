@@ -48,6 +48,12 @@
             <version>${fabric8.kubernetes-client.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-sql-avro-confluent-registry</artifactId>
+            <version>${flink.avro.confluent.registry.version}</version>
+        </dependency>
+
         <!-- Connectors -->
         <dependency>
             <groupId>org.apache.flink</groupId>
