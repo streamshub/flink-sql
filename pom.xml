@@ -17,7 +17,7 @@
     <maven.compiler.version>3.10.1</maven.compiler.version>
 
     <!-- Project dependency version -->
-    <flink.version>1.19.0</flink.version>
+    <flink.version>1.19.1</flink.version>
     <kafka.version>3.7.0</kafka.version>
     <slf4j.version>1.7.36</slf4j.version>
     <fabric8.kubernetes-client.version>6.13.0</fabric8.kubernetes-client.version>

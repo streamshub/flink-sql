@@ -36,23 +36,11 @@ public class SqlRunner {
     private static final String STATEMENT_DELIMITER = ";"; // a statement should end with `;`
     private static final String LINE_DELIMITER = "\n";
 
-    private static final String COMMENT_PATTERN = "(--.*)|(((\\/\\*)+?[\\w\\W]+?(\\*\\/)+))";
-
     private static final Pattern SET_STATEMENT_PATTERN =
             Pattern.compile("SET\\s+'(\\S+)'\\s+=\\s+'(.*)';", Pattern.CASE_INSENSITIVE);
 
     private static final Pattern STATEMENT_SET_PATTERN =
             Pattern.compile("(EXECUTE STATEMENT SET BEGIN.*?END;)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-
-    private static final String BEGIN_CERTIFICATE = "-----BEGIN CERTIFICATE-----";
-    private static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
-    private static final String ESCAPED_BEGIN_CERTIFICATE = "======BEGIN CERTIFICATE=====";
-    private static final String ESCAPED_END_CERTIFICATE = "=====END CERTIFICATE=====";
-
-    private static final String BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----";
-    private static final String END_PRIVATE_KEY = "-----END PRIVATE KEY-----";
-    private static final String ESCAPED_BEGIN_PRIVATE_KEY  = "======BEGIN PRIVATE KEY=====";
-    private static final String ESCAPED_END_PRIVATE_KEY = "=====END PRIVATE KEY=====";
 
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
@@ -69,7 +57,7 @@ public class SqlRunner {
         LOG.debug("TableEnvironment config: " + tableEnv.getConfig().toMap());
 
         for (String statement : statements) {
-            var processedStatement = interpolateSecrets(statement);
+            var processedStatement = KubernetesSecretReplacer.interpolateSecrets(statement);
             Matcher setMatcher = SET_STATEMENT_PATTERN.matcher(statement.trim());
 
             if (setMatcher.matches()) {
@@ -115,19 +103,6 @@ public class SqlRunner {
         }
 
         return statements;
-    }
-
-    private static String interpolateSecrets(String statement) {
-        return KubernetesSecretReplacer.replaceSecrets(statement)
-                .replaceAll(BEGIN_CERTIFICATE, ESCAPED_BEGIN_CERTIFICATE)
-                .replaceAll(END_CERTIFICATE, ESCAPED_END_CERTIFICATE)
-                .replaceAll(BEGIN_PRIVATE_KEY, ESCAPED_BEGIN_PRIVATE_KEY)
-                .replaceAll(END_PRIVATE_KEY, ESCAPED_END_PRIVATE_KEY)
-                .replaceAll(COMMENT_PATTERN, "")
-                .replaceAll(ESCAPED_BEGIN_CERTIFICATE, BEGIN_CERTIFICATE)
-                .replaceAll(ESCAPED_END_CERTIFICATE, END_CERTIFICATE)
-                .replaceAll(ESCAPED_BEGIN_PRIVATE_KEY, BEGIN_PRIVATE_KEY)
-                .replaceAll(ESCAPED_END_PRIVATE_KEY, END_PRIVATE_KEY);
     }
 
     private static String formatSqlStatements(String content) {

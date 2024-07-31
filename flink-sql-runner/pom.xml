@@ -50,7 +50,7 @@
 
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-sql-avro-confluent-registry</artifactId>
+            <artifactId>flink-avro-confluent-registry</artifactId>
             <version>${flink.avro.confluent.registry.version}</version>
         </dependency>
 
@@ -67,7 +67,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.6.0</version>
                 <executions>
                     <!-- Run shade goal on package phase -->
                     <execution>
