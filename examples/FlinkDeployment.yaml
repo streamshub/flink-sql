@@ -3,7 +3,7 @@ kind: FlinkDeployment
 metadata:
   name: flink-deployment-example
 spec:
-  image:  flink-sql-runner:latest
+  image: localhost/flink-sql-runner:latest
   imagePullPolicy: Never
   flinkVersion: v1_19
   flinkConfiguration:
