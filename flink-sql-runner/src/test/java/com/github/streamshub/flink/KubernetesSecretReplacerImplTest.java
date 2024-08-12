@@ -26,10 +26,13 @@ class KubernetesSecretReplacerImplTest {
         MixedOperation mockSecrets = mock(MixedOperation.class);
         Resource mockResource = mock(Resource.class);
 
+        String namespace = "default";
+        String secretName = "my-secret";
+
         // Set up the mock behavior
         when(mockClient.secrets()).thenReturn(mockSecrets);
-        when(mockSecrets.inNamespace("default")).thenReturn(mockSecrets);
-        when(mockSecrets.withName("my-secret")).thenReturn(mockResource);
+        when(mockSecrets.inNamespace(namespace)).thenReturn(mockSecrets);
+        when(mockSecrets.withName(secretName)).thenReturn(mockResource);
 
 
         Map<String, String> secretData = new HashMap<>();
@@ -50,14 +53,22 @@ class KubernetesSecretReplacerImplTest {
         KubernetesSecretReplacer ksr = new KubernetesSecretReplacerImpl(mockClient);
 
         String statement = "CREATE TABLE MyTable ( message STRING ) WITH ( " +
-                "'connector' = 'test', " +
-                "'secret.property.user' = '{{secret:default/my-secret/username}}'," +
-                "'secret.property.password = '{{secret:default/my-secret/password}}');";
+                "'connector' = 'kafka', " +
+                "'topic' = 'topic'" +
+                "'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9093', " +
+                "'properties.security.protocol' = 'SASL_PLAINTEXT', " +
+                "'properties.sasl.mechanism' = 'PLAIN', " +
+                "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required " +
+                "username={{secret:default/my-secret/username}} password={{secret:default/my-secret/password}}');";
 
         String expected = "CREATE TABLE MyTable ( message STRING ) WITH ( " +
-                "'connector' = 'test', " +
-                "'secret.property.user' = 'bob'," +
-                "'secret.property.password = '123456');";
+                "'connector' = 'kafka', " +
+                "'topic' = 'topic'" +
+                "'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9093', " +
+                "'properties.security.protocol' = 'SASL_PLAINTEXT', " +
+                "'properties.sasl.mechanism' = 'PLAIN', " +
+                "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required" +
+                " username=bob password=123456');";
 
         assertEquals(expected, ksr.interpolateSecrets(statement));
     }
@@ -68,9 +79,13 @@ class KubernetesSecretReplacerImplTest {
         KubernetesSecretReplacer ksr = new KubernetesSecretReplacerImpl(mockClient);
 
         String statement = "CREATE TABLE MyTable ( message STRING ) WITH ( " +
-                "'connector' = 'test', " +
-                "'secret.property.user' = '{{secret:default/my-secret2/username}}'," +
-                "'secret.property.password = '{{secret:default/my-secret2/password}}');";
+                "'connector' = 'kafka', " +
+                "'topic' = 'topic'" +
+                "'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9093', " +
+                "'properties.security.protocol' = 'SASL_PLAINTEXT', " +
+                "'properties.sasl.mechanism' = 'PLAIN', " +
+                "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required " +
+                "username={{secret:default/my-secret2/username}} password={{secret:default/my-secret2/password}}');";
 
         Exception e = assertThrows(RuntimeException.class, () -> ksr.interpolateSecrets(statement));
         assertEquals("Secret my-secret2 does not exist", e.getMessage());
@@ -81,9 +96,13 @@ class KubernetesSecretReplacerImplTest {
         KubernetesSecretReplacer ksr = new KubernetesSecretReplacerImpl(mockClient);
 
         String statement = "CREATE TABLE MyTable ( message STRING ) WITH ( " +
-                "'connector' = 'test', " +
-                "'secret.property.user' = '{{secret:default/my-secret/username1}}'," +
-                "'secret.property.password = '{{secret:default/my-secret/password1}}');";
+                "'connector' = 'kafka', " +
+                "'topic' = 'topic'" +
+                "'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9093', " +
+                "'properties.security.protocol' = 'SASL_PLAINTEXT', " +
+                "'properties.sasl.mechanism' = 'PLAIN', " +
+                "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required " +
+                "username={{secret:default/my-secret/username1}} password={{secret:default/my-secret/password1}}');";
 
         Exception e = assertThrows(RuntimeException.class, () -> ksr.interpolateSecrets(statement));
         assertEquals("Could not read data with key username1 from secret my-secret", e.getMessage());

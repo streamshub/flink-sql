@@ -26,7 +26,7 @@
 
     <!-- Test only dependencies -->
     <mockito.version>4.11.0</mockito.version>
-    <jupiter.version>5.8.2</jupiter.version>
+    <jupiter.version>5.10.3</jupiter.version>
   </properties>
 
   <modules>
