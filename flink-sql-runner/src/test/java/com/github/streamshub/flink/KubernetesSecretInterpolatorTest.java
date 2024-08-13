@@ -67,6 +67,21 @@ class KubernetesSecretInterpolatorTest {
                 .contains("password=123456");
     }
 
+    @Test
+    void shouldNotInterpolateWithoutDelimiters() {
+        Interpolator ksi = new KubernetesSecretInterpolator(mockClient);
+
+        assertThat(ksi.interpolate("username={secret:default/my-secret/username}"))
+                .contains("{secret:default/my-secret/username}");
+    }
+
+    @Test
+    void shouldOnlyInterpolateSecrets() {
+        Interpolator ksi = new KubernetesSecretInterpolator(mockClient);
+
+        assertThat(ksi.interpolate("{{cluster-address:default/my-cluster}}'"))
+                .contains("{{cluster-address:default/my-cluster}}");
+    }
 
     @Test
     void testSecretsDoNotExist() {
