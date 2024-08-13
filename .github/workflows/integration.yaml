@@ -35,6 +35,7 @@ jobs:
         run: mvn -B clean verify
 
       - name: Login to Quay
+        if: github.event_name == 'push' && github.ref_name == 'main'
         uses: docker/login-action@v3
         with:
           registry: "${{ secrets.IMAGE_REPO_HOSTNAME }}"
