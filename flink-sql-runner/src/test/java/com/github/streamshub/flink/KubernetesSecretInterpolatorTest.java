@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class KubernetesSecretReplacerImplTest {
+class KubernetesSecretInterpolatorTest {
 
     private KubernetesClient mockClient;
 
@@ -50,7 +50,7 @@ class KubernetesSecretReplacerImplTest {
 
     @Test
     void testInterpolateSecrets() {
-        KubernetesSecretReplacer ksr = new KubernetesSecretReplacerImpl(mockClient);
+        Interpolator ksr = new KubernetesSecretInterpolator(mockClient);
 
         String statement = "CREATE TABLE MyTable ( message STRING ) WITH ( " +
                 "'connector' = 'kafka', " +
@@ -70,13 +70,13 @@ class KubernetesSecretReplacerImplTest {
                 "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required" +
                 " username=bob password=123456');";
 
-        assertEquals(expected, ksr.interpolateSecrets(statement));
+        assertEquals(expected, ksr.interpolate(statement));
     }
 
 
     @Test
     void testSecretsDoNotExist() {
-        KubernetesSecretReplacer ksr = new KubernetesSecretReplacerImpl(mockClient);
+        Interpolator ksr = new KubernetesSecretInterpolator(mockClient);
 
         String statement = "CREATE TABLE MyTable ( message STRING ) WITH ( " +
                 "'connector' = 'kafka', " +
@@ -87,13 +87,13 @@ class KubernetesSecretReplacerImplTest {
                 "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required " +
                 "username={{secret:default/my-secret2/username}} password={{secret:default/my-secret2/password}}');";
 
-        Exception e = assertThrows(RuntimeException.class, () -> ksr.interpolateSecrets(statement));
+        Exception e = assertThrows(RuntimeException.class, () -> ksr.interpolate(statement));
         assertEquals("Secret my-secret2 does not exist", e.getMessage());
     }
 
     @Test
     void testSecretsDataDoesNotExist() {
-        KubernetesSecretReplacer ksr = new KubernetesSecretReplacerImpl(mockClient);
+        Interpolator ksr = new KubernetesSecretInterpolator(mockClient);
 
         String statement = "CREATE TABLE MyTable ( message STRING ) WITH ( " +
                 "'connector' = 'kafka', " +
@@ -104,7 +104,7 @@ class KubernetesSecretReplacerImplTest {
                 "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required " +
                 "username={{secret:default/my-secret/username1}} password={{secret:default/my-secret/password1}}');";
 
-        Exception e = assertThrows(RuntimeException.class, () -> ksr.interpolateSecrets(statement));
+        Exception e = assertThrows(RuntimeException.class, () -> ksr.interpolate(statement));
         assertEquals("Could not read data with key username1 from secret my-secret", e.getMessage());
     }
 }

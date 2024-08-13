@@ -8,22 +8,22 @@ import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class KubernetesSecretReplacerImpl implements KubernetesSecretReplacer{
+public class KubernetesSecretInterpolator implements Interpolator {
     private final KubernetesClient client;
 
     // Expected pattern for a secret is {{secret:<namespace>/<name>/<key>}}
     private static final Pattern SECRET_PATTERN = Pattern.compile("\\{\\{secret:([^/]+)/([^}]+)/([^}]+)}}");
 
-    public KubernetesSecretReplacerImpl() {
+    public KubernetesSecretInterpolator() {
         this.client = new KubernetesClientBuilder().build();
     }
 
     // visible for testing
-    public KubernetesSecretReplacerImpl(KubernetesClient client) {
+    public KubernetesSecretInterpolator(KubernetesClient client) {
         this.client = client;
     }
 
-    public String interpolateSecrets(String input) {
+    public String interpolate(String input) {
         Matcher matcher = SECRET_PATTERN.matcher(input);
         StringBuffer result = new StringBuffer();
 

@@ -56,9 +56,9 @@ public class SqlRunner {
         var tableEnv = TableEnvironment.create(settings);
         LOG.debug("TableEnvironment config: " + tableEnv.getConfig().toMap());
 
-        KubernetesSecretReplacer ksr = new KubernetesSecretReplacerImpl();
+        Interpolator ksr = new KubernetesSecretInterpolator();
         for (String statement : statements) {
-            var processedStatement = ksr.interpolateSecrets(statement);
+            var processedStatement = ksr.interpolate(statement);
             Matcher setMatcher = SET_STATEMENT_PATTERN.matcher(statement.trim());
 
             if (setMatcher.matches()) {
