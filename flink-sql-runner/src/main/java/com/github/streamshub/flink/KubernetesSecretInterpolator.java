@@ -18,8 +18,7 @@ public class KubernetesSecretInterpolator implements Interpolator {
         this.client = new KubernetesClientBuilder().build();
     }
 
-    // visible for testing
-    public KubernetesSecretInterpolator(KubernetesClient client) {
+    /* test */ protected KubernetesSecretInterpolator(KubernetesClient client) {
         this.client = client;
     }
 
