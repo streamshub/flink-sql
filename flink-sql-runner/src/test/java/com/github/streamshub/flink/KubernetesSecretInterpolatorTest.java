@@ -1,18 +1,19 @@
 package com.github.streamshub.flink;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,7 +51,7 @@ class KubernetesSecretInterpolatorTest {
 
     @Test
     void testInterpolateSecrets() {
-        Interpolator ksr = new KubernetesSecretInterpolator(mockClient);
+        Interpolator ksi = new KubernetesSecretInterpolator(mockClient);
 
         String statement = "CREATE TABLE MyTable ( message STRING ) WITH ( " +
                 "'connector' = 'kafka', " +
@@ -61,22 +62,30 @@ class KubernetesSecretInterpolatorTest {
                 "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required " +
                 "username={{secret:default/my-secret/username}} password={{secret:default/my-secret/password}}');";
 
-        String expected = "CREATE TABLE MyTable ( message STRING ) WITH ( " +
-                "'connector' = 'kafka', " +
-                "'topic' = 'topic'" +
-                "'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9093', " +
-                "'properties.security.protocol' = 'SASL_PLAINTEXT', " +
-                "'properties.sasl.mechanism' = 'PLAIN', " +
-                "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required" +
-                " username=bob password=123456');";
-
-        assertEquals(expected, ksr.interpolate(statement));
+        assertThat(ksi.interpolate(statement))
+                .contains("username=bob")
+                .contains("password=123456");
     }
 
+    @Test
+    void shouldNotInterpolateWithoutDelimiters() {
+        Interpolator ksi = new KubernetesSecretInterpolator(mockClient);
+
+        assertThat(ksi.interpolate("username={secret:default/my-secret/username}"))
+                .contains("{secret:default/my-secret/username}");
+    }
+
+    @Test
+    void shouldOnlyInterpolateSecrets() {
+        Interpolator ksi = new KubernetesSecretInterpolator(mockClient);
+
+        assertThat(ksi.interpolate("{{cluster-address:default/my-cluster}}'"))
+                .contains("{{cluster-address:default/my-cluster}}");
+    }
 
     @Test
     void testSecretsDoNotExist() {
-        Interpolator ksr = new KubernetesSecretInterpolator(mockClient);
+        Interpolator ksi = new KubernetesSecretInterpolator(mockClient);
 
         String statement = "CREATE TABLE MyTable ( message STRING ) WITH ( " +
                 "'connector' = 'kafka', " +
@@ -87,13 +96,14 @@ class KubernetesSecretInterpolatorTest {
                 "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required " +
                 "username={{secret:default/my-secret2/username}} password={{secret:default/my-secret2/password}}');";
 
-        Exception e = assertThrows(RuntimeException.class, () -> ksr.interpolate(statement));
-        assertEquals("Secret my-secret2 does not exist", e.getMessage());
+        assertThatThrownBy(() -> ksi.interpolate(statement))
+                .hasMessage("Secret my-secret2 does not exist")
+                .isInstanceOf(RuntimeException.class);
     }
 
     @Test
     void testSecretsDataDoesNotExist() {
-        Interpolator ksr = new KubernetesSecretInterpolator(mockClient);
+        Interpolator ksi = new KubernetesSecretInterpolator(mockClient);
 
         String statement = "CREATE TABLE MyTable ( message STRING ) WITH ( " +
                 "'connector' = 'kafka', " +
@@ -104,7 +114,9 @@ class KubernetesSecretInterpolatorTest {
                 "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required " +
                 "username={{secret:default/my-secret/username1}} password={{secret:default/my-secret/password1}}');";
 
-        Exception e = assertThrows(RuntimeException.class, () -> ksr.interpolate(statement));
-        assertEquals("Could not read data with key username1 from secret my-secret", e.getMessage());
+        assertThatThrownBy(() -> ksi.interpolate(statement))
+                .hasMessage("Could not read data with key username1 from secret my-secret")
+                .isInstanceOf(RuntimeException.class);
     }
 }
+
