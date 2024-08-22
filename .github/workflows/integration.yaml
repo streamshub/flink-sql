@@ -60,3 +60,22 @@ jobs:
           push: true
           file: flink-sql-runner/Dockerfile
           tags: ${{ secrets.IMAGE_REPO_HOSTNAME }}/${{ secrets.IMAGE_REPO_NAMESPACE }}/flink-sql-runner:latest
+
+      ## Save the context information for use in Sonar analysis
+      - name: Save Build Context
+        run: |
+          mkdir -vp target
+          echo "$GITHUB_CONTEXT" > target/build-context.json
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+
+      ## Attach the target directory for use in Sonar analysis
+      - name: Attach Build Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: target
+          path: |
+            **/target/
+            !**/target/*.jar
+            !**/target/failsafe-reports/**/*
+            !**/target/surefire-reports/**/*
