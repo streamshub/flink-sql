@@ -14,19 +14,19 @@
     <maven.compiler.release>17</maven.compiler.release>
 
     <!-- Maven plugin versions -->
-    <maven.compiler.version>3.10.1</maven.compiler.version>
+    <maven.compiler.version>3.13.0</maven.compiler.version>
 
     <!-- Project dependency version -->
-    <flink.version>1.19.1</flink.version>
+    <flink.version>1.20.0</flink.version>
     <kafka.version>3.7.0</kafka.version>
-    <slf4j.version>1.7.36</slf4j.version>
-    <fabric8.kubernetes-client.version>6.13.0</fabric8.kubernetes-client.version>
-    <flink.avro.confluent.registry.version>1.19.1</flink.avro.confluent.registry.version>
+    <slf4j.version>2.0.16</slf4j.version>
+    <fabric8.kubernetes-client.version>6.13.3</fabric8.kubernetes-client.version>
+    <flink.avro.confluent.registry.version>1.20.0</flink.avro.confluent.registry.version>
     <flink.kafka.connector.version>3.2.0-1.19</flink.kafka.connector.version>
 
     <!-- Test only dependencies -->
     <mockito.version>5.12.0</mockito.version>
-    <jupiter.version>5.10.3</jupiter.version>
+    <jupiter.version>5.11.0</jupiter.version>
     <!-- Sonar settings -->
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>streamshub</sonar.organization>
