@@ -11,6 +11,16 @@ updates:
     schedule:
       interval: weekly
     groups:
-      dependencies:
+      flink-dependencies:
+        patterns:
+          - "org.apache.flink:*"
+        group-name: "Flink Dependencies"
+        commit-messages:
+          prefix: "Flink dependencies"
+        update-types: ["security", "version-update:semver-patch"]
+
+      general-dependencies:
         patterns:
           - "*"
+        group-name: "General Dependencies"
+        update-types: ["all"]
