@@ -24,14 +24,14 @@ public class KubernetesSecretInterpolator implements Interpolator {
 
     public String interpolate(String input) {
         Matcher matcher = SECRET_PATTERN.matcher(input);
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         while (matcher.find()) {
             String namespace = matcher.group(1);
             String secretName = matcher.group(2);
             String secretKey = matcher.group(3);
             String secretValue = getSecretValue(namespace, secretName, secretKey);
-            matcher.appendReplacement(result, secretValue != null ? secretValue.trim() : "");
+            matcher.appendReplacement(result, secretValue.trim());
         }
         matcher.appendTail(result);
 
