@@ -14,8 +14,8 @@ updates:
       flink-dependencies:
         applies-to: security-updates
         patterns:
-          - "org.apache.flink:*"
+          - "*flink*"
 
       general-dependencies:
-        patterns:
-          - "*"
+        exclude-patterns:
+          - "*flink*"
