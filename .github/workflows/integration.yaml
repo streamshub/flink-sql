@@ -46,19 +46,19 @@ jobs:
         if: github.ref_name != 'main'
         uses: docker/build-push-action@v6
         with:
-          context: flink-sql-runner/
+          context: .
           platforms: linux/amd64,linux/arm64
           push: false
-          file: flink-sql-runner/Dockerfile
+          file: Dockerfile
 
       - name: Build and Push Image
         if: github.event_name == 'push' && github.ref_name == 'main'
         uses: docker/build-push-action@v6
         with:
-          context: flink-sql-runner/
+          context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          file: flink-sql-runner/Dockerfile
+          file: Dockerfile
           tags: ${{ secrets.IMAGE_REPO_HOSTNAME }}/${{ secrets.IMAGE_REPO_NAMESPACE }}/flink-sql-runner:latest
 
       ## Save the context information for use in Sonar analysis
