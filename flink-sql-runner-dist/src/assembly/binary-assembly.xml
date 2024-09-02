@@ -1,0 +1,36 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 http://maven.apache.org/xsd/assembly-2.2.0.xsd">
+    <id>flink-sql-runner-dist</id>
+    <formats>
+        <!--directory format included to make inspecting the contents easier-->
+        <format>dir</format>
+        <format>tar.gz</format>
+    </formats>
+    <!--to match upstream tarball include a top level directory within the tarball-->
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>${project.build.directory}/flink-distribution/flink-${flink.version}</directory>
+            <outputDirectory>/flink</outputDirectory>
+        </fileSet>
+    </fileSets>
+    <dependencySets>
+        <!--the job is put in its own directory to distinguish it from upstream optional dependencies-->
+        <dependencySet>
+            <outputDirectory>/streamshub/</outputDirectory>
+            <includes>
+                <include>com.github.streamshub:*</include>
+            </includes>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+        <!--all other dependencies are put in a directory to facilitate adding them all to the flink classpath-->
+        <dependencySet>
+            <outputDirectory>/streamshub/lib</outputDirectory>
+            <excludes>
+                <exclude>com.github.streamshub:*</exclude>
+            </excludes>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+        </dependencySet>
+    </dependencySets>
+</assembly>

@@ -15,6 +15,8 @@
 
     <!-- Maven plugin versions -->
     <maven.compiler.version>3.13.0</maven.compiler.version>
+    <maven.assembly.version>3.7.1</maven.assembly.version>
+    <maven.download.version>1.9.0</maven.download.version>
 
     <!-- Project dependency version -->
     <flink.version>1.19.1</flink.version>
@@ -34,6 +36,7 @@
 
   <modules>
       <module>flink-sql-runner</module>
+      <module>flink-sql-runner-dist</module>
   </modules>
 
   <build>
@@ -43,6 +46,16 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven.compiler.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>com.googlecode.maven-download-plugin</groupId>
+          <artifactId>download-maven-plugin</artifactId>
+          <version>${maven.download.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>${maven.assembly.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
