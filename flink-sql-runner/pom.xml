@@ -59,19 +59,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-avro-confluent-registry</artifactId>
-            <version>${flink.avro.confluent.registry.version}</version>
-        </dependency>
-
-        <!-- Connectors -->
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-connector-kafka</artifactId>
-            <version>${flink.kafka.connector.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${jupiter.version}</version>
