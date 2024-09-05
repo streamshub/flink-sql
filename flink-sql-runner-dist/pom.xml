@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.github.streamshub</groupId>
+        <artifactId>flink-sql</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>flink-sql-runner-dist</artifactId>
+
+    <properties>
+        <flink.download.url>
+            https://dlcdn.apache.org/flink/flink-${flink.version}/flink-${flink.version}-bin-scala_2.12.tgz
+        </flink.download.url>
+        <flink.download.sha512>
+            2be32fd038d078c9701f3557d0409b432a5d358749528a8f9113cec119972941b99b8dd375dd4e22e4895a8319b5409533209b3afd5fe73aeaa03566d76f0cc0
+        </flink.download.sha512>
+        <!--by default, tar preserved the uid/gid off the build machine, which can be too long for the RHEL image.
+        9999 matches the image's user/group-->
+        <distribution.override.uid>9999</distribution.override.uid>
+        <distribution.override.gid>9999</distribution.override.gid>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>${flink.download.url}</url>
+                            <sha512>${flink.download.sha512}</sha512>
+                            <unpack>true</unpack>
+                            <alwaysVerifyChecksum>true</alwaysVerifyChecksum>
+                            <outputDirectory>${project.build.directory}/flink-distribution</outputDirectory>
+                            <!--observed GitHub actions hitting the read timeout even at 20seconds-->
+                            <readTimeOut>60000</readTimeOut>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/assembly/binary-assembly.xml</descriptor>
+                    </descriptors>
+                    <overrideGid>${distribution.override.gid}</overrideGid>
+                    <overrideUid>${distribution.override.uid}</overrideUid>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <!--included in /opt/streamshub/-->
+        <dependency>
+            <groupId>com.github.streamshub</groupId>
+            <artifactId>flink-sql-runner</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!--included in /opt/streamshub/lib/-->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-sql-avro-confluent-registry</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-sql-connector-kafka</artifactId>
+            <version>${flink.kafka.connector.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

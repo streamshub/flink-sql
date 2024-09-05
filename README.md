@@ -10,7 +10,7 @@ An application to execute Flink SQL jobs.
     ```
 2. Build an image
     ```
-    minikube image build flink-sql-runner -t flink-sql-runner:latest
+    minikube image build . -t flink-sql-runner:latest
     ```
 3. Create a `flink` namespace:
    ```
