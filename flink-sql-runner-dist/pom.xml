@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>flink-sql-runner-dist</artifactId>
+    <packaging>pom</packaging>
 
     <properties>
         <flink.download.url>
