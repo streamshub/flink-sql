@@ -44,7 +44,7 @@ class SqlRunnerTest {
                         "'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9093', " +
                         "'properties.security.protocol' = 'SASL_PLAINTEXT', " +
                         "'properties.sasl.mechanism' = 'PLAIN', " +
-                        "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required username={{secret:flink/mysecret/username}} password={{secret:flink/mysecret/password}}'); " +
+                        "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required username=\"{{secret:flink/mysecret/username}}\" password=\"{{secret:flink/mysecret/password}}\"\\;'); " +
                 "CREATE TABLE print_table ( message STRING ) WITH ('connector' = 'print'); " +
                 "INSERT INTO print_table SELECT * FROM Table1; ";
 
@@ -54,7 +54,7 @@ class SqlRunnerTest {
                         "'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9093', " +
                         "'properties.security.protocol' = 'SASL_PLAINTEXT', " +
                         "'properties.sasl.mechanism' = 'PLAIN', " +
-                        "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required username={{secret:flink/mysecret/username}} password={{secret:flink/mysecret/password}}');",
+                        "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required username=\"{{secret:flink/mysecret/username}}\" password=\"{{secret:flink/mysecret/password}}\";');",
                 "CREATE TABLE print_table ( message STRING ) WITH ('connector' = 'print');",
                 "INSERT INTO print_table SELECT * FROM Table1;");
 
