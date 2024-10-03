@@ -28,8 +28,14 @@ An application to execute Flink SQL jobs.
    ```
    {{secret:<NAMESPACE>/<SECRET NAME>/<DATA KEY>}}
    ```
-   If running with the local image built in step 2, ensure that the FlinkDeployment's image is updated. 
+   If running with the local image built in step 2, ensure that the FlinkDeployment's image is updated.
 8. Start a Flink job:
    ```
    kubectl create example/FlinkDeployment.yaml -n flink
+   ```
+   Update `example/FlinkDeployment.yaml` with your own SQL statements e.g. `args: ["<SQL_STATEMENTS>"]`. 
+   Note that semicolon `;` is a special character used as a statement delimiter. If it's part of your SQL statements, make sure it is escaped by `\\`. 
+   For example, it might be used for `properties.sasl.jaas.config` value when using Kafka connector. In this case, it would look something like this:
+   ```
+   'properties.sasl.jaas.config' = 'org.apache.flink.kafka.shaded.org.apache.kafka.common.security.plain.PlainLoginModule required username=\"test-user\" password=\"{{secret:flink/test-user/user.password}}\"\\;'
    ```

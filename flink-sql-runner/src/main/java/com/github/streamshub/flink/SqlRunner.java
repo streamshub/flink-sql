@@ -89,8 +89,14 @@ public class SqlRunner {
             otherStatements = formatted.replace(statementSet, "").trim();
         }
 
+        boolean escaped = false;
         for (char c : otherStatements.toCharArray()) {
-            if (c == STATEMENT_DELIMITER.charAt(0)) {
+            if (escaped) {
+                current.append(c);
+                escaped = false;
+            } else if (c == '\\') {
+                escaped = true;
+            } else if (c == STATEMENT_DELIMITER.charAt(0)) {
                 current.append(c);
                 statements.add(current.toString().trim());
                 current = new StringBuilder();
