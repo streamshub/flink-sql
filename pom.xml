@@ -16,7 +16,7 @@
     <!-- Maven plugin versions -->
     <maven.compiler.version>3.13.0</maven.compiler.version>
     <maven.assembly.version>3.7.1</maven.assembly.version>
-    <maven.download.version>1.9.0</maven.download.version>
+    <maven.download.version>1.10.0</maven.download.version>
 
     <!-- Project dependency version -->
     <flink.version>1.19.1</flink.version>
@@ -27,8 +27,8 @@
     <flink.kafka.connector.version>3.2.0-1.19</flink.kafka.connector.version>
 
     <!-- Test only dependencies -->
-    <mockito.version>5.14.0</mockito.version>
-    <jupiter.version>5.11.1</jupiter.version>
+    <mockito.version>5.14.1</mockito.version>
+    <jupiter.version>5.11.2</jupiter.version>
     <!-- Sonar settings -->
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>streamshub</sonar.organization>
