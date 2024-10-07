@@ -36,25 +36,26 @@ public class SqlRunner {
     private static final String STATEMENT_DELIMITER = ";"; // a statement should end with `;`
     private static final String LINE_DELIMITER = "\n";
 
-    private static final Pattern SET_STATEMENT_PATTERN =
-            Pattern.compile("SET\\s+'(\\S+)'\\s+=\\s+'(.*)';", Pattern.CASE_INSENSITIVE);
+    private static final Pattern STATEMENT_DELIMETER_PATTERN = Pattern.compile("(?<!\\\\)" + STATEMENT_DELIMITER);
 
-    private static final Pattern STATEMENT_SET_PATTERN =
-            Pattern.compile("(EXECUTE STATEMENT SET BEGIN.*?END;)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    private static final Pattern SET_STATEMENT_PATTERN =
+            Pattern.compile("SET\\s+'(\\S+)'\\s*=\\s*'(.*)'\\s*;", Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern STATEMENT_SET_START_PATTERN =
+            Pattern.compile("\\s?EXECUTE\\s+STATEMENT\\s+SET\\s+BEGIN\\s+", Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern STATEMENT_SET_END_PATTERN = Pattern.compile("\\s*END\\s*;", Pattern.CASE_INSENSITIVE);
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
-            throw new Exception("Exactly 1 argument is expected.");
-        }
 
-        var statements = parseStatements(args[0]);
+        var statements = parseStatementArgs(args);
 
         EnvironmentSettings settings = EnvironmentSettings
                 .newInstance()
                 .inStreamingMode()
                 .build();
         var tableEnv = TableEnvironment.create(settings);
-        LOG.debug("TableEnvironment config: " + tableEnv.getConfig().toMap());
+        LOG.debug("TableEnvironment config: {}", tableEnv.getConfig().toMap());
 
         Interpolator ksr = new KubernetesSecretInterpolator();
         for (String statement : statements) {
@@ -74,44 +75,74 @@ public class SqlRunner {
         }
     }
 
-    static List<String> parseStatements(String rawStatements) {
-        var formatted = formatSqlStatements(rawStatements.trim());
+    static List<String> parseStatementArgs(String[] statementArgs) {
 
         var statements = new ArrayList<String>();
-        StringBuilder current = new StringBuilder();
-        Matcher matcher = STATEMENT_SET_PATTERN.matcher(formatted);
+        for (String rawStatements : statementArgs) {
+            var cleaned = cleanSqlStatement(rawStatements.trim());
+            var formatted = formatSqlStatements(cleaned);
 
-        String statementSet = "";
-        String otherStatements = formatted;
+            var statementSetString = new StringBuilder();
+            boolean insideStatementSet = false;
+            // Split the statements on `;` except where that `;` is preceded by a double backspace
+            for (String statement: STATEMENT_DELIMETER_PATTERN.split(formatted)) {
 
-        if (matcher.find()) {
-            statementSet = matcher.group(1);
-            otherStatements = formatted.replace(statementSet, "").trim();
-        }
+                if (!statement.isBlank()) {
+                    // As we split on `;` we need to replace them at the end of the statement.
+                    // There is probably a regex incantation we can add to the STATEMENT_DELIMETER_PATTERN to do this, but this will do for now.
+                    statement = statement.trim() + STATEMENT_DELIMITER;
+                    // Deal with the specific situation where secret strings in WITH clauses contain the `\\;` literal and will end up leaving a `\` before the `;`
+                    // Again, there is probably regex foo to achieve this
+                    statement = statement.replaceAll(Pattern.quote("\\;"), ";");
+                } else {
+                    // If the statement is a blank string then skip to the next one
+                    continue;
+                }
 
-        boolean escaped = false;
-        for (char c : otherStatements.toCharArray()) {
-            if (escaped) {
-                current.append(c);
-                escaped = false;
-            } else if (c == '\\') {
-                escaped = true;
-            } else if (c == STATEMENT_DELIMITER.charAt(0)) {
-                current.append(c);
-                statements.add(current.toString().trim());
-                current = new StringBuilder();
-            } else {
-                current.append(c);
+                var statementSetStartMatch = STATEMENT_SET_START_PATTERN.matcher(statement);
+
+                if (statementSetStartMatch.find()) {
+                    LOG.debug("Found start of statement set: '{}'", statement);
+                    insideStatementSet = true;
+                    statementSetString.append(statement);
+                } else if (insideStatementSet) {
+                    LOG.debug("Found statement inside statement set: '{}'", statement);
+                    statementSetString.append(" ").append(statement);
+                    var statementSetEndMatch = STATEMENT_SET_END_PATTERN.matcher(statement);
+                    if (statementSetEndMatch.find()) {
+                        LOG.debug("Found end of statement set: '{}'", statement);
+                        statements.add(statementSetString.toString());
+                        insideStatementSet = false;
+                        statementSetString = new StringBuilder();
+                    }
+                } else {
+                    LOG.debug("Found statement: {}", statement);
+                    statements.add(statement);
+                }
             }
-        }
-
-        if (statementSet.length() > 0) {
-            statements.add(statementSet);
         }
 
         return statements;
     }
 
+    /**
+     * Replaces all newline characters with spaces and removes tab charaters from the supplied SQL Statement.
+     *
+     * @param statement The SQL statement to be cleaned
+     * @return The cleaned SQL statement
+     */
+    private static String cleanSqlStatement(String statement) {
+        return statement
+                .replaceAll("\n", " ")
+                .replaceAll("\t", "");
+    }
+
+    /**
+     * Makes sure that a statement ends with the STATEMENT_DELIMETER and a newline
+     *
+     * @param content The raw SQL statement string
+     * @return The Formatted SQL statement string
+     */
     private static String formatSqlStatements(String content) {
         StringBuilder formatted = new StringBuilder();
         formatted.append(content);
