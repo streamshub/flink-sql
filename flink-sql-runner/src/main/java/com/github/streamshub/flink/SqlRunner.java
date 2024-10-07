@@ -36,25 +36,35 @@ public class SqlRunner {
     private static final String STATEMENT_DELIMITER = ";"; // a statement should end with `;`
     private static final String LINE_DELIMITER = "\n";
 
-    private static final Pattern SET_STATEMENT_PATTERN =
-            Pattern.compile("SET\\s+'(\\S+)'\\s+=\\s+'(.*)';", Pattern.CASE_INSENSITIVE);
+    private static final Pattern STATEMENT_DELIMETER_PATTERN = Pattern.compile("(?<!\\\\)" + STATEMENT_DELIMITER);
 
-    private static final Pattern STATEMENT_SET_PATTERN =
-            Pattern.compile("(EXECUTE STATEMENT SET BEGIN.*?END;)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    private static final Pattern SET_STATEMENT_PATTERN =
+            Pattern.compile("SET\\s+'(\\S+)'\\s*=\\s*'(.*)'\\s*;", Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern STATEMENT_SET_START_PATTERN =
+            Pattern.compile("\\s?EXECUTE\\s+STATEMENT\\s+SET\\s+BEGIN\\s+", Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern STATEMENT_SET_END_PATTERN = Pattern.compile("\\s*END\\s*;", Pattern.CASE_INSENSITIVE);
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
-            throw new Exception("Exactly 1 argument is expected.");
-        }
 
-        var statements = parseStatements(args[0]);
+        System.out.println("\n####################################\n");
+        System.out.println("THESE ARE THE ARGS I HAVE BEEN SENT:");
+        for (String arg : args) {
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            System.out.println(arg);
+        }
+        System.out.println("\n####################################\n");
+        System.out.flush();
+
+        var statements = parseStatementArgs(args);
 
         EnvironmentSettings settings = EnvironmentSettings
                 .newInstance()
                 .inStreamingMode()
                 .build();
         var tableEnv = TableEnvironment.create(settings);
-        LOG.debug("TableEnvironment config: " + tableEnv.getConfig().toMap());
+        LOG.debug("TableEnvironment config: {}", tableEnv.getConfig().toMap());
 
         Interpolator ksr = new KubernetesSecretInterpolator();
         for (String statement : statements) {
@@ -74,44 +84,101 @@ public class SqlRunner {
         }
     }
 
-    static List<String> parseStatements(String rawStatements) {
-        var formatted = formatSqlStatements(rawStatements.trim());
+    static List<String> parseStatementArg(String rawStatementArg) {
+
+        LOG.debug("Parsing raw statement:\n<begin>{}<end>", rawStatementArg);
 
         var statements = new ArrayList<String>();
-        StringBuilder current = new StringBuilder();
-        Matcher matcher = STATEMENT_SET_PATTERN.matcher(formatted);
 
-        String statementSet = "";
-        String otherStatements = formatted;
+        var cleaned = cleanSqlStatement(rawStatementArg);
+        var formatted = formatSqlStatements(cleaned);
 
-        if (matcher.find()) {
-            statementSet = matcher.group(1);
-            otherStatements = formatted.replace(statementSet, "").trim();
-        }
+        var statementSetString = new StringBuilder();
+        boolean insideStatementSet = false;
+        // Split the statements on `;` except where that `;` is preceded by a double backspace
+        for (String statement: STATEMENT_DELIMETER_PATTERN.split(formatted)) {
 
-        boolean escaped = false;
-        for (char c : otherStatements.toCharArray()) {
-            if (escaped) {
-                current.append(c);
-                escaped = false;
-            } else if (c == '\\') {
-                escaped = true;
-            } else if (c == STATEMENT_DELIMITER.charAt(0)) {
-                current.append(c);
-                statements.add(current.toString().trim());
-                current = new StringBuilder();
+            if (!statement.isBlank()) {
+                // As we split on `;` we need to replace them at the end of the statement.
+                // There is probably a regex incantation we can add to the STATEMENT_DELIMETER_PATTERN to do this, but this will do for now.
+                statement = statement.trim() + STATEMENT_DELIMITER;
+                // Deal with the specific situation where secret strings in WITH clauses contain the `\\;` literal and will end up leaving a `\` before the `;`
+                // Again, there is probably regex foo to achieve this
+                statement = statement.replaceAll(Pattern.quote("\\;"), ";");
             } else {
-                current.append(c);
+                // If the statement is a blank string then skip to the next one
+                continue;
+            }
+
+            var statementSetStartMatch = STATEMENT_SET_START_PATTERN.matcher(statement);
+
+            if (statementSetStartMatch.find()) {
+                LOG.debug("Found start of statement set: <begin>{}<end>", statement);
+                insideStatementSet = true;
+                statementSetString.append(statement);
+            } else if (insideStatementSet) {
+                LOG.debug("Found statement inside statement set: <begin>{}<end>", statement);
+                statementSetString.append(" ").append(statement);
+                var statementSetEndMatch = STATEMENT_SET_END_PATTERN.matcher(statement);
+                if (statementSetEndMatch.find()) {
+                    LOG.debug("Found end of statement set: <begin>{}<end>", statement);
+                    statements.add(statementSetString.toString());
+                    insideStatementSet = false;
+                    statementSetString = new StringBuilder();
+                }
+            } else {
+                LOG.debug("Found statement: <begin>{}<end>", statement);
+                statements.add(statement);
             }
         }
 
-        if (statementSet.length() > 0) {
-            statements.add(statementSet);
+        return statements;
+
+    }
+
+    static List<String> parseStatementArgs(String[] statementArgs) {
+
+        var statements = new ArrayList<String>();
+        for (String rawStatements : statementArgs) {
+            statements.addAll(parseStatementArg(rawStatements));
         }
 
         return statements;
     }
 
+    /**
+     * Cleans the supplied statement string by:
+     *  - Trimming whitespace
+     *  - Removing ' and " characters from the start and end of the statement
+     *  - Replacing all newline characters with spaces
+     *  - Removing tab characters
+     *
+     * @param rawStatement The SQL statement to be cleaned
+     * @return The cleaned SQL statement
+     */
+    private static String cleanSqlStatement(String rawStatement) {
+
+        var statement = rawStatement.trim();
+
+        if (statement.startsWith("'") || statement.startsWith("\"")) {
+           statement = statement.substring(1);
+        }
+
+        if (statement.endsWith("'") || statement.endsWith("\"")) {
+            statement = statement.substring(0, statement.length() - 1);
+        }
+
+        return statement
+                .replaceAll("\n", " ")
+                .replaceAll("\t", "");
+    }
+
+    /**
+     * Makes sure that a statement ends with the STATEMENT_DELIMETER and a newline
+     *
+     * @param content The raw SQL statement string
+     * @return The Formatted SQL statement string
+     */
     private static String formatSqlStatements(String content) {
         StringBuilder formatted = new StringBuilder();
         formatted.append(content);
