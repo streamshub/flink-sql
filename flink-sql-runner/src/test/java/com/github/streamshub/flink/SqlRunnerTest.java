@@ -1,6 +1,7 @@
 package com.github.streamshub.flink;
 
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -9,6 +10,7 @@ class SqlRunnerTest {
 
     @Test
     void testParseStatements() {
+
         String statements = "CREATE TABLE Table1 ( field STRING, field1 STRING ) WITH ( 'connector' = 'datagen'); " +
                 "CREATE TABLE Table2 WITH ( 'connector' = 'print') LIKE Table1; " +
                 "INSERT INTO Table2 SELECT * FROM Table1;";
