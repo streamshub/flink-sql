@@ -17,6 +17,7 @@
     <maven.compiler.version>3.13.0</maven.compiler.version>
     <maven.assembly.version>3.7.1</maven.assembly.version>
     <maven.download.version>1.10.0</maven.download.version>
+    <jacoco.version>0.8.12</jacoco.version>
 
     <!-- Project dependency version -->
     <flink.version>1.19.1</flink.version>
