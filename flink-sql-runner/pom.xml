@@ -59,13 +59,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jacoco</groupId> 
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>${jacoco.version}</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${jupiter.version}</version>
