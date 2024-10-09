@@ -32,7 +32,7 @@ jobs:
       - name: Build with Maven
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn -B clean verify
+        run: mvn -B clean verify -Pcoverage
 
       - name: Login to Quay
         if: github.event_name == 'push' && github.ref_name == 'main'
