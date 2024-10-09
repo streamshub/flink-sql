@@ -76,6 +76,7 @@ jobs:
           name: target
           path: |
             **/target/
-            !**/target/*.jar
+            !flink-sql-runner-dist/**
+            !**/target/**.jar
             !**/target/failsafe-reports/**/*
             !**/target/surefire-reports/**/*
