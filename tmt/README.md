@@ -35,7 +35,7 @@ plan defines selectors for [tests](./tests) which should be executed.
 
 Run all plans
 ```commandline
-testing-farm request --compose CentOS-Stream-9 --git-url https://github.com/streamshub/flink-sql.git
+testing-farm request --compose CentOS-Stream-9 --git-url https://github.com/streamshub/flink-sql.git -e IP_FAMILY=ipv4
 ```
 
 Select specific plan and git branch
@@ -43,7 +43,8 @@ Select specific plan and git branch
 testing-farm request --compose CentOS-Stream-9 \
  --git-url https://github.com/streamshub/flink-sql.git \
  --git-ref some-branch \
- --plan smoke
+ --plan smoke \
+ -e IP_FAMILY=ipv4
 ```
 
 Run multi-arch build
@@ -52,7 +53,8 @@ testing-farm request --compose CentOS-Stream-9 \
  --git-url https://github.com/streamshub/flink-sql.git \
  --git-ref some-branch \
  --plan smoke \
- --arch aarch64,x86_64
+ --arch aarch64,x86_64 \
+ -e IP_FAMILY=ipv4
 ```
 
 ## Packit-as-a-service for PR check

@@ -1,8 +1,8 @@
 #!/bin/sh -eux
 
 
-TEST_LOG_DIR="${TMT_PLAN_DATA}/../discover/default-0/tests/target/logs"
-XUNIT_LOG_DIR="${TMT_PLAN_DATA}/../discover/default-0/tests/target/failsafe-reports"
+TEST_LOG_DIR="${TMT_PLAN_DATA}/../discover/default-0/tests/streams-e2e/target/logs"
+XUNIT_LOG_DIR="${TMT_PLAN_DATA}/../discover/default-0/tests/target/streams-e2e/failsafe-reports"
 
 TARGET_DIR="${TMT_PLAN_DATA}"
 LOGS_DIR="${TARGET_DIR}/logs"
