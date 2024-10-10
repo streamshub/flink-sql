@@ -1,0 +1,26 @@
+test:
+  ./test.sh
+duration: 2h
+environment:
+  TEST_ENV_VAR: value
+
+/smoke:
+  summary: Run smoke tests
+  duration: 60m
+  tier: 1
+  environment+:
+    TEST_GROUPS: smoke
+
+/flink-sql-example:
+  summary: Run flink sql example streams-e2e suite
+  duration: 60m
+  tier: 1
+  environment+:
+    TEST_GROUPS: flink-sql-example
+
+/flink-all:
+  summary: Run flink streams-e2e suite
+  duration: 180m
+  tier: 1
+  environment+:
+    TEST_GROUPS: flink

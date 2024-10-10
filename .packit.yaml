@@ -1,0 +1,71 @@
+# Default packit instance is a prod and only this is used
+# stg instance is present for testing new packit features in forked repositories where stg is installed.
+packit_instances: ["prod", "stg"]
+upstream_project_url: https://github.com/streamshub/flink-sql
+issue_repository: https://github.com/streamshub/flink-sql
+jobs:
+  ###############################################################################################
+  - job: tests
+    trigger: pull_request
+    # Suffix for job name
+    identifier: "flink-sql-example"
+    targets:
+      # This target is not used at all by our tests, but it has to be one of the available - https://packit.dev/docs/configuration/#aliases
+      - centos-stream-9-x86_64
+      # ARM is commented since apicurio-operator upstream is not supported on ARM
+      # - centos-stream-9-aarch64
+    # We don't need to build any packages for Fedora/RHEL/CentOS, it is not related to streams-e2e tests
+    skip_build: true
+    manual_trigger: true
+    env: { IP_FAMILY: ipv4 }
+    labels:
+      - flink-sql-example
+    tf_extra_params:
+      test:
+        tmt:
+          name: flink-sql-example
+  ###############################################################################################
+  - job: tests
+    trigger: pull_request
+    # Suffix for job name
+    identifier: "flink-all"
+    targets:
+      - centos-stream-9-x86_64
+    skip_build: true
+    manual_trigger: true
+    env: { IP_FAMILY: ipv4 }
+    labels:
+      - flink-all
+    tf_extra_params:
+      test:
+        tmt:
+          name: flink-all
+  ###############################################################################################
+  - job: tests
+    trigger: pull_request
+    # Suffix for job name
+    identifier: "smoke"
+    targets:
+      - centos-stream-9-x86_64
+    skip_build: true
+    manual_trigger: true
+    env: { IP_FAMILY: ipv4 }
+    labels:
+      - smoke
+    tf_extra_params:
+      test:
+        tmt:
+          name: smoke
+  ###############################################################################################
+  - job: tests
+    trigger: commit
+    branch: main
+    identifier: "smoke"
+    targets:
+      - centos-stream-9-x86_64
+    skip_build: true
+    env: { IP_FAMILY: ipv4 }
+    tf_extra_params:
+      test:
+        tmt:
+          name: smoke
