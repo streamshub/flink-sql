@@ -20,6 +20,8 @@ package com.github.streamshub.flink;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableEnvironment;
 
+import org.apache.flink.table.api.internal.TableEnvironmentImpl;
+import org.apache.flink.table.delegation.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +40,8 @@ public class SqlRunner {
 
     private static final Pattern STATEMENT_DELIMETER_PATTERN = Pattern.compile("(?<!\\\\)" + STATEMENT_DELIMITER);
 
+    private static final String ESCAPED_BACKSLASH_PATTERN_STRING = Pattern.quote("\\;");
+
     private static final Pattern SET_STATEMENT_PATTERN =
             Pattern.compile("SET\\s+'(\\S+)'\\s*=\\s*'(.*)'\\s*;", Pattern.CASE_INSENSITIVE);
 
@@ -46,16 +50,7 @@ public class SqlRunner {
 
     private static final Pattern STATEMENT_SET_END_PATTERN = Pattern.compile("\\s*END\\s*;", Pattern.CASE_INSENSITIVE);
 
-    public static void main(String[] args) throws Exception {
-
-        System.out.println("\n####################################\n");
-        System.out.println("THESE ARE THE ARGS I HAVE BEEN SENT:");
-        for (String arg : args) {
-            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            System.out.println(arg);
-        }
-        System.out.println("\n####################################\n");
-        System.out.flush();
+    public static void main(String[] args) {
 
         var statements = parseStatementArgs(args);
 
@@ -93,7 +88,7 @@ public class SqlRunner {
         var cleaned = cleanSqlStatement(rawStatementArg);
         var formatted = formatSqlStatements(cleaned);
 
-        var statementSetString = new StringBuilder();
+        var statementSetBuilder = new StringBuilder();
         boolean insideStatementSet = false;
         // Split the statements on `;` except where that `;` is preceded by a double backspace
         for (String statement: STATEMENT_DELIMETER_PATTERN.split(formatted)) {
@@ -104,7 +99,7 @@ public class SqlRunner {
                 statement = statement.trim() + STATEMENT_DELIMITER;
                 // Deal with the specific situation where secret strings in WITH clauses contain the `\\;` literal and will end up leaving a `\` before the `;`
                 // Again, there is probably regex foo to achieve this
-                statement = statement.replaceAll(Pattern.quote("\\;"), ";");
+                statement = statement.replaceAll(ESCAPED_BACKSLASH_PATTERN_STRING, ";");
             } else {
                 // If the statement is a blank string then skip to the next one
                 continue;
@@ -115,16 +110,25 @@ public class SqlRunner {
             if (statementSetStartMatch.find()) {
                 LOG.debug("Found start of statement set: <begin>{}<end>", statement);
                 insideStatementSet = true;
-                statementSetString.append(statement);
+                statementSetBuilder.append(statement);
             } else if (insideStatementSet) {
                 LOG.debug("Found statement inside statement set: <begin>{}<end>", statement);
-                statementSetString.append(" ").append(statement);
+                // Regardless of what the statement is, we know we are inside the statement set so we should add it to the builder.
+                statementSetBuilder.append(" ").append(statement);
+                // Check if what we just added is the end of the statement set.
                 var statementSetEndMatch = STATEMENT_SET_END_PATTERN.matcher(statement);
                 if (statementSetEndMatch.find()) {
+                    // If it is then lets add the full statement set to the statements list and reset.
                     LOG.debug("Found end of statement set: <begin>{}<end>", statement);
-                    statements.add(statementSetString.toString());
+                    var statementSet = statementSetBuilder.toString();
+                    LOG.debug("Appending full statement set: <begin>{}<end>", statementSet);
+                    statements.add(statementSet);
                     insideStatementSet = false;
-                    statementSetString = new StringBuilder();
+                    statementSetBuilder = new StringBuilder();
+                } else {
+                    // We are still inside the Statement Set so we move onto the next statement in the set and check
+                    // if that is an end statement.
+                    continue;
                 }
             } else {
                 LOG.debug("Found statement: <begin>{}<end>", statement);
@@ -169,7 +173,7 @@ public class SqlRunner {
         }
 
         return statement
-                .replaceAll("\n", " ")
+                .replaceAll("\\R+", " ")
                 .replaceAll("\t", "");
     }
 
