@@ -20,8 +20,6 @@ package com.github.streamshub.flink;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableEnvironment;
 
-import org.apache.flink.table.api.internal.TableEnvironmentImpl;
-import org.apache.flink.table.delegation.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,17 +91,17 @@ public class SqlRunner {
         // Split the statements on `;` except where that `;` is preceded by a double backspace
         for (String statement: STATEMENT_DELIMETER_PATTERN.split(formatted)) {
 
-            if (!statement.isBlank()) {
-                // As we split on `;` we need to replace them at the end of the statement.
-                // There is probably a regex incantation we can add to the STATEMENT_DELIMETER_PATTERN to do this, but this will do for now.
-                statement = statement.trim() + STATEMENT_DELIMITER;
-                // Deal with the specific situation where secret strings in WITH clauses contain the `\\;` literal and will end up leaving a `\` before the `;`
-                // Again, there is probably regex foo to achieve this
-                statement = statement.replaceAll(ESCAPED_BACKSLASH_PATTERN_STRING, ";");
-            } else {
+            if (statement.isBlank()) {
                 // If the statement is a blank string then skip to the next one
                 continue;
             }
+
+            // As we split on `;` we need to replace them at the end of the statement.
+            // There is probably a regex incantation we can add to the STATEMENT_DELIMETER_PATTERN to do this, but this will do for now.
+            statement = statement.trim() + STATEMENT_DELIMITER;
+            // Deal with the specific situation where secret strings in WITH clauses contain the `\\;` literal and will end up leaving a `\` before the `;`
+            // Again, there is probably regex foo to achieve this
+            statement = statement.replaceAll(ESCAPED_BACKSLASH_PATTERN_STRING, ";");
 
             var statementSetStartMatch = STATEMENT_SET_START_PATTERN.matcher(statement);
 
@@ -125,11 +123,10 @@ public class SqlRunner {
                     statements.add(statementSet);
                     insideStatementSet = false;
                     statementSetBuilder = new StringBuilder();
-                } else {
-                    // We are still inside the Statement Set so we move onto the next statement in the set and check
-                    // if that is an end statement.
-                    continue;
                 }
+                // else:
+                // We are still inside the Statement Set so we move onto the next statement in the set and check
+                // if that is an end statement.
             } else {
                 LOG.debug("Found statement: <begin>{}<end>", statement);
                 statements.add(statement);
@@ -174,7 +171,7 @@ public class SqlRunner {
 
         return statement
                 .replaceAll("\\R+", " ")
-                .replaceAll("\t", "");
+                .replaceAll("\\t+", "");
     }
 
     /**
