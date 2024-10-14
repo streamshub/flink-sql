@@ -2,6 +2,11 @@
 
 An application to execute Flink SQL jobs.
 
+## Prerequisites
+* Java Development Kit (JDK) 17
+* Apache Maven 3.8.x or higher
+* Kubernetes cluster
+
 ## Building and running Flink SQL Runner
 
 1. Build application
@@ -39,3 +44,12 @@ An application to execute Flink SQL jobs.
    ```
    'properties.sasl.jaas.config' = 'org.apache.flink.kafka.shaded.org.apache.kafka.common.security.plain.PlainLoginModule required username=\"test-user\" password=\"{{secret:flink/test-user/user.password}}\"\\;'
    ```
+
+## Developing
+We welcome your contributions to the Flink SQL project! To ensure a smooth collaboration:
+
+* **Pull Requests**: Open a PR with your proposed changes.
+* **Build Success**: Make sure the build passes without errors.
+* **Code Quality**: Your code must pass SonarCloud code analysis checks.
+* **Unit Tests**: Update existing unit tests for any modifications and write new tests for new features.
+* **System Tests**: Repository developers can trigger [Packit CI](tmt/README.md/#packit-as-a-service-for-pr-check) for running system tests.

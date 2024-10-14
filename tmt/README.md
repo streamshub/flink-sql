@@ -75,3 +75,8 @@ Run selected jobs by label
 ```
 /packit test --labels flink-all
 ```
+
+#### List of labels
+* flink-all
+* smoke
+* flink-sql-example
