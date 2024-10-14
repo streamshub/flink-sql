@@ -61,8 +61,10 @@ testing-farm request --compose CentOS-Stream-9 \
 
 [Packit-as-a-service](https://github.com/marketplace/packit-as-a-service) is a github application
 for running testing-farm jobs from PR requested by command. Definition of the jobs is stored in
-[.packit.yaml](../.packit.yaml). Packit can be triggered from the PR by comment, but only members of strimzi
+[.packit.yaml](../.packit.yaml). Packit can be triggered from the PR by comment, but only members of streamshub
 organization are able to run tests.
+
+The prepare phase install kind cluster and some required packages it takes around 5min
 
 ### Usage
 
@@ -75,3 +77,8 @@ Run selected jobs by label
 ```
 /packit test --labels flink-all
 ```
+
+#### List of labels
+* flink-all - all tests with flink tag from [streams-e2e](https://github.com/streamshub/streams-e2e/tree/main/src/test/java/io/streams/e2e/flink), takes around 15min
+* smoke -  all tests with flink tag from [streams-e2e](https://github.com/streamshub/streams-e2e/blob/862d21903e7e53955c1b4f5c4c81f3a50703f310/src/test/java/io/streams/e2e/flink/sql/SqlJobRunnerST.java#L102), takes around 10min
+* flink-sql-example - run just test based on [recommendation-app](https://github.com/streamshub/flink-sql-examples/tree/main/recommendation-app), takes around 7min
