@@ -78,6 +78,11 @@ Run selected jobs by label
 /packit test --labels flink-all
 ```
 
+To use different branch or fork of streams-e2e test suite you can override it by env configuration
+```
+/packit test --labels smoke --env TEST_REPO_URL=https://github.com/kornys/streams-e2e.git --env TEST_REPO_BRANCH=new-test
+```
+
 #### List of labels
 * flink-all - all tests with flink tag from [streams-e2e](https://github.com/streamshub/streams-e2e/tree/main/src/test/java/io/streams/e2e/flink), takes around 15min
 * smoke -  all tests with flink tag from [streams-e2e](https://github.com/streamshub/streams-e2e/blob/862d21903e7e53955c1b4f5c4c81f3a50703f310/src/test/java/io/streams/e2e/flink/sql/SqlJobRunnerST.java#L102), takes around 10min
