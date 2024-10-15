@@ -17,7 +17,11 @@ jobs:
     # We don't need to build any packages for Fedora/RHEL/CentOS, it is not related to streams-e2e tests
     skip_build: true
     manual_trigger: true
-    env: { IP_FAMILY: ipv4 }
+    env: {
+      IP_FAMILY: ipv4,
+      TEST_REPO_URL: https://github.com/streamshub/streams-e2e.git,
+      TEST_REPO_BRANCH: main
+    }
     labels:
       - flink-sql-example
     tf_extra_params:
@@ -33,7 +37,11 @@ jobs:
       - centos-stream-9-x86_64
     skip_build: true
     manual_trigger: true
-    env: { IP_FAMILY: ipv4 }
+    env: {
+      IP_FAMILY: ipv4,
+      TEST_REPO_URL: https://github.com/streamshub/streams-e2e.git,
+      TEST_REPO_BRANCH: main
+    }
     labels:
       - flink-all
     tf_extra_params:
@@ -49,7 +57,11 @@ jobs:
       - centos-stream-9-x86_64
     skip_build: true
     manual_trigger: true
-    env: { IP_FAMILY: ipv4 }
+    env: {
+      IP_FAMILY: ipv4,
+      TEST_REPO_URL: https://github.com/streamshub/streams-e2e.git,
+      TEST_REPO_BRANCH: main
+    }
     labels:
       - smoke
     tf_extra_params:
@@ -64,7 +76,11 @@ jobs:
     targets:
       - centos-stream-9-x86_64
     skip_build: true
-    env: { IP_FAMILY: ipv4 }
+    env: {
+      IP_FAMILY: ipv4,
+      TEST_REPO_URL: https://github.com/streamshub/streams-e2e.git,
+      TEST_REPO_BRANCH: main
+    }
     tf_extra_params:
       test:
         tmt:

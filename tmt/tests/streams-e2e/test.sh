@@ -3,7 +3,7 @@
 # Move to root folder of flink-sql
 cd ../../../
 
-git clone https://github.com/streamshub/streams-e2e.git
+git clone -b ${TEST_REPO_BRANCH} "${TEST_REPO_URL}"
 
 cd streams-e2e
 
