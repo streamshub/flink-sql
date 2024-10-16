@@ -18,8 +18,8 @@ jobs:
     skip_build: true
     manual_trigger: true
     env:
-      IP_FAMILY: ipv4,
-      TEST_REPO_URL: https://github.com/streamshub/streams-e2e.git,
+      IP_FAMILY: ipv4
+      TEST_REPO_URL: https://github.com/streamshub/streams-e2e.git
       TEST_REPO_BRANCH: main
     labels:
       - flink-sql-example
@@ -37,8 +37,8 @@ jobs:
     skip_build: true
     manual_trigger: true
     env:
-      IP_FAMILY: ipv4,
-      TEST_REPO_URL: https://github.com/streamshub/streams-e2e.git,
+      IP_FAMILY: ipv4
+      TEST_REPO_URL: https://github.com/streamshub/streams-e2e.git
       TEST_REPO_BRANCH: main
     labels:
       - flink-all
@@ -56,8 +56,8 @@ jobs:
     skip_build: true
     manual_trigger: true
     env:
-      IP_FAMILY: ipv4,
-      TEST_REPO_URL: https://github.com/streamshub/streams-e2e.git,
+      IP_FAMILY: ipv4
+      TEST_REPO_URL: https://github.com/streamshub/streams-e2e.git
       TEST_REPO_BRANCH: main
     labels:
       - smoke
@@ -74,8 +74,8 @@ jobs:
       - centos-stream-9-x86_64
     skip_build: true
     env:
-      IP_FAMILY: ipv4,
-      TEST_REPO_URL: https://github.com/streamshub/streams-e2e.git,
+      IP_FAMILY: ipv4
+      TEST_REPO_URL: https://github.com/streamshub/streams-e2e.git
       TEST_REPO_BRANCH: main
     tf_extra_params:
       test:
