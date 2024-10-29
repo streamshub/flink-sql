@@ -5,6 +5,8 @@ upstream_project_url: https://github.com/streamshub/flink-sql
 issue_repository: https://github.com/streamshub/flink-sql
 jobs:
   ###############################################################################################
+  # Manual comment driven test jobs
+  ###############################################################################################
   - job: tests
     trigger: pull_request
     # Suffix for job name
@@ -68,6 +70,28 @@ jobs:
       test:
         tmt:
           name: smoke
+  ###############################################################################################
+  # Push to PR auto test jobs
+  ###############################################################################################
+  - job: tests
+    trigger: pull_request
+    # Suffix for job name
+    identifier: "smoke"
+    targets:
+      - centos-stream-9-x86_64
+    skip_build: true
+    manual_trigger: false
+    env: {
+      IP_FAMILY: ipv4,
+      TEST_REPO_URL: https://github.com/streamshub/streams-e2e.git,
+      TEST_REPO_BRANCH: main
+    }
+    tf_extra_params:
+      test:
+        tmt:
+          name: smoke
+  ###############################################################################################
+  # Push to main auto test jobs
   ###############################################################################################
   - job: tests
     trigger: commit
