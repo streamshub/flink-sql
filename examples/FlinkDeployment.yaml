@@ -5,7 +5,7 @@ metadata:
 spec:
   image: quay.io/streamshub/flink-sql-runner:latest
   imagePullPolicy: Never
-  flinkVersion: v1_19
+  flinkVersion: v1_20
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "1"
   serviceAccount: flink
