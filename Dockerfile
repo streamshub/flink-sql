@@ -16,6 +16,7 @@ ENV FLINK_HOME=/opt/flink
 ENV STREAMSHUB_HOME=/opt/streamshub
 ENV FLINK_LIB_DIR=$FLINK_HOME/lib
 ENV FLINK_OPT_DIR=$FLINK_HOME/opt
+ENV FLINK_PLUGINS_DIR=$FLINK_HOME/plugins
 ENV PATH=$FLINK_HOME/bin:$PATH
 RUN groupadd --system --gid=9999 flink && \
     useradd --system --home-dir $FLINK_HOME --uid=9999 --gid=flink flink
@@ -27,6 +28,8 @@ COPY --from=stage --chown=flink:flink /opt/streamshub/ /opt/streamshub/
 RUN set -ex && \
   ln -s ${STREAMSHUB_HOME}/flink-sql-runner*.jar ${STREAMSHUB_HOME}/flink-sql-runner.jar && \
   cp -r ${STREAMSHUB_HOME}/lib/* ${FLINK_HOME}/lib/ && \
+  mkdir -p ${FLINK_PLUGINS_DIR}/flink-s3-fs-hadoop && \
+  mv ${FLINK_OPT_DIR}/flink-s3-fs-hadoop*.jar ${FLINK_PLUGINS_DIR}/flink-s3-fs-hadoop && \
   rm -rf flink-sql-runner-dist.tgz && \
   chown -R flink:flink $FLINK_HOME && \
   chown -R flink:flink $STREAMSHUB_HOME && \
