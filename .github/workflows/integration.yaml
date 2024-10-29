@@ -34,6 +34,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn -B clean verify -Pcoverage
 
+      - name: Test Image Build
+        if: github.ref_name != 'main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: false
+          file: Dockerfile
+
       - name: Login to Quay
         if: github.event_name == 'push' && github.ref_name == 'main'
         uses: docker/login-action@v3
@@ -43,21 +52,13 @@ jobs:
           password: "${{ secrets.IMAGE_REPO_PASSWORD }}"
 
       - name: Image metadata
+        if: github.event_name == 'push' && github.ref_name == 'main'
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ secrets.IMAGE_REPO_NAMESPACE }}/flink-sql-runner
-            ${{ secrets.IMAGE_REPO_HOSTNAME }}/${{ secrets.IMAGE_REPO_NAMESPACE }}/flink-sql-runner
-
-      - name: Test Image Build
-        if: github.ref_name != 'main'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: false
-          file: Dockerfile
+            streamshub/flink-sql-runner
+            quay.io/streamshub/flink-sql-runner
 
       - name: Build and Push Image
         if: github.event_name == 'push' && github.ref_name == 'main'
