@@ -17,7 +17,7 @@
             https://dlcdn.apache.org/flink/flink-${flink.version}/flink-${flink.version}-bin-scala_2.12.tgz
         </flink.download.url>
         <flink.download.sha512>
-            2be32fd038d078c9701f3557d0409b432a5d358749528a8f9113cec119972941b99b8dd375dd4e22e4895a8319b5409533209b3afd5fe73aeaa03566d76f0cc0
+           2af8c4d0329df8b139d8ad50ef9179bfed98907a9df7d4411b6e60ff60ca8105f81d07d8d2b7b904e214e68f10c9dfa3616274ca692a2b18de66f3541597a71d 
         </flink.download.sha512>
         <!--by default, tar preserved the uid/gid off the build machine, which can be too long for the RHEL image.
         9999 matches the image's user/group-->
