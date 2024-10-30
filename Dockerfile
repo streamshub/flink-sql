@@ -9,6 +9,7 @@ USER 0
 RUN microdnf install -y \
     wget \
     hostname \
+    util-linux \
     && microdnf clean all
 
 # Prepare environment
