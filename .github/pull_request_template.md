@@ -17,5 +17,5 @@ Please delete options that are not relevant.
 Packit test job with smoke subset of tests is triggered by default.
 If you want to run full flink test profile please type a following comment
 ```
-packit test --labels flink-all
+/packit test --labels flink-all
 ```
