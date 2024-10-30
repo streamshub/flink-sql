@@ -1,11 +1,12 @@
-name: Build
+name: Manual Build
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    types: [ opened, synchronize, reopened ]
-
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build'     
+        required: true
+        default: 'v0.0.1'
 jobs:
   build:
 
@@ -14,6 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag }}
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -34,17 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn -B clean verify -Pcoverage
 
-      - name: Test Image Build
-        if: github.ref_name != 'main'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: false
-          file: Dockerfile
-
       - name: Login to Quay
-        if: github.event_name == 'push' && github.ref_name == 'main'
         uses: docker/login-action@v3
         with:
           registry: "${{ secrets.IMAGE_REPO_HOSTNAME }}"
@@ -52,15 +45,15 @@ jobs:
           password: "${{ secrets.IMAGE_REPO_PASSWORD }}"
 
       - name: Image metadata
-        if: github.event_name == 'push' && github.ref_name == 'main'
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: |
             quay.io/streamshub/flink-sql-runner
+          tags: |
+            type=raw,value=${{github.event.inputs.tag}}
 
       - name: Build and Push Image
-        if: github.event_name == 'push' && github.ref_name == 'main'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -69,23 +62,3 @@ jobs:
           file: Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      ## Save the context information for use in Sonar analysis
-      - name: Save Build Context
-        run: |
-          mkdir -vp target
-          echo "$GITHUB_CONTEXT" > target/build-context.json
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-
-      ## Attach the target directory for use in Sonar analysis
-      - name: Attach Build Output
-        uses: actions/upload-artifact@v4
-        with:
-          name: target
-          path: |
-            **/target/
-            !flink-sql-runner-dist/**
-            !**/target/**.jar
-            !**/target/failsafe-reports/**/*
-            !**/target/surefire-reports/**/*
