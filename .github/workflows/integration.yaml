@@ -2,7 +2,8 @@ name: Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "releases/**" ]
+    tags: [ "v*" ]
   pull_request:
     types: [ opened, synchronize, reopened ]
 
@@ -35,7 +36,7 @@ jobs:
         run: mvn -B clean verify -Pcoverage
 
       - name: Test Image Build
-        if: github.ref_name != 'main'
+        if: github.event_name == 'pull_request'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -44,7 +45,7 @@ jobs:
           file: Dockerfile
 
       - name: Login to Quay
-        if: github.event_name == 'push' && github.ref_name == 'main'
+        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           registry: "${{ secrets.IMAGE_REPO_HOSTNAME }}"
@@ -52,15 +53,22 @@ jobs:
           password: "${{ secrets.IMAGE_REPO_PASSWORD }}"
 
       - name: Image metadata
-        if: github.event_name == 'push' && github.ref_name == 'main'
+        if: github.event_name == 'push'
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: |
-            quay.io/streamshub/flink-sql-runner
+            ${{ secrets.IMAGE_REPO_HOSTNAME }}/${{ secrets.IMAGE_REPO_NAMESPACE }}/flink-sql-runner
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+          flavor: |
+            latest=false
+            prefix=
+            suffix=
 
       - name: Build and Push Image
-        if: github.event_name == 'push' && github.ref_name == 'main'
+        if: github.event_name == 'push'
         uses: docker/build-push-action@v6
         with:
           context: .
