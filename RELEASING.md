@@ -1,6 +1,6 @@
 # Releasing
 
-Currently the only external artefact for a release is the SQL runner image in quay.io
+Currently the only external artefact for a release is the SQL runner image in quay.io.
 
 The automation builds and pushes images to quay on push to:
 1. main (image will be tagged as main eg quay.io/streamshub/flink-sql-runner:main )
