@@ -3,8 +3,8 @@ kind: FlinkDeployment
 metadata:
   name: flink-deployment-example
 spec:
-  image: quay.io/streamshub/flink-sql-runner:latest
-  imagePullPolicy: Never
+  image: quay.io/streamshub/flink-sql-runner:v0.0.1
+  imagePullPolicy: Always
   flinkVersion: v1_20
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "1"
@@ -20,6 +20,26 @@ spec:
   job:
     jarURI: local:///opt/streamshub/flink-sql-runner.jar
     #Replace the value for "args" with your own SQL statements
-    args: ["CREATE TABLE orders (order_number BIGINT, price DECIMAL(32,2), buyer ROW<first_name STRING, last_name STRING>, last_name STRING, order_time TIMESTAMP(3)) WITH ('connector' = 'datagen'); CREATE TABLE print_table WITH ('connector' = 'print') LIKE orders; INSERT INTO print_table SELECT * FROM orders;"]
+    args: ["
+        CREATE TABLE orders (
+          order_number BIGINT, 
+          price DECIMAL(32,2), 
+          buyer ROW<first_name STRING, 
+          last_name STRING>, 
+          last_name STRING, 
+          order_time TIMESTAMP(3)
+        ) WITH (
+          'connector' = 'datagen'
+        ); 
+        CREATE TABLE print_table 
+        WITH (
+          'connector' = 'print'
+        ) 
+        LIKE orders
+        ; 
+        INSERT INTO print_table 
+          SELECT * 
+          FROM orders;
+        "]
     parallelism: 1
     upgradeMode: stateless
