@@ -53,3 +53,7 @@ We welcome your contributions to the Flink SQL project! To ensure a smooth colla
 * **Code Quality**: Your code must pass SonarCloud code analysis checks.
 * **Unit Tests**: Update existing unit tests for any modifications and write new tests for new features.
 * **System Tests**: Repository developers can trigger [Packit CI](tmt/README.md/#packit-as-a-service-for-pr-check) for running system tests.
+
+## Releasing
+
+Follow the [Releasing](RELEASING.md) guide.
