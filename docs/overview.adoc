@@ -1,0 +1,6 @@
+= Introduction
+
+The aim of this project is to make it easy to run SQL queries using https://flink.apache.org/[Apache Flink] on Kubernetes.
+Currently, in order to run SQL queries with Flink, you would need to run the Flink SQL client CLI or submit queries via a REST request to a Flink SQL Gateway instance.
+
+This project provides a convenient wrapper application and container image, that you can use with the https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/[Flink Kubernetes Operator]'s `+FlinkDeployment+` custom resource (CR) and allows you to specify your SQL queries as arguments in the CR.
