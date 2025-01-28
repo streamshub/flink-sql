@@ -46,9 +46,11 @@ The Flink Kubernetes operator, by default, will watch all namespaces in the Kube
 However, to be able to to run Flink jobs in a namespace other than the operator's namespace, you will need to create a service account with the required permissions in that namespace.
 
 The https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-stable/docs/operations/rbac/[upstream documentation] covers the RBAC design and requirements for the Flink Kubernetes operator in detail. 
-However, you can find an example service, role and role-binding in the `+install/namespace-role+` directory which you can use to setup a new application namespace:
+However, you can find an example service, role and role-binding in the `+install/namespace-rbac+` directory which you can use to setup a new application namespace:
 
 [source,bash]
 ----
-kubectl -n <application-namespace> -f install/namespace-role
+kubectl -n <application-namespace> -f install/namespace-rbac
 ----
+
+This will create a `+flink+` service account that you should reference in your `+FlinkDeployment.spec.serviceAccount+` field.
