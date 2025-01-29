@@ -1,10 +1,8 @@
 = Installation
 
-== Flink Kubernetes Operator
+In order to be able to deploy Flink SQL jobs the https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/[Flink Kubernetes Operator] must be installed.
 
-In order to be able to deploy Flink SQL jobs the https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/[Flink Kubernetes Operator] needs to be installed.
-
-=== CertManager Installation
+== CertManager Installation
 
 The operator installs a webhook that requires CertManager to function, so this needs to be installed first:
 
@@ -17,7 +15,7 @@ kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.
 kubectl wait deployment --all  --for=condition=Available=True --timeout=300s -n cert-manager
 ----
 
-=== Flink Kubernetes Operator Installation
+== Flink Kubernetes Operator Installation
 
 First add the `+helm+` repository, if you haven't already:
 
@@ -39,13 +37,13 @@ helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-oper
 -n <operator-namespace>
 ----
 
-=== Deploying Flink jobs in other namespaces
+== Deploying Flink jobs in other namespaces
 
-The helm installation will create the required service, role and role-binding to run Flink jobs in the defined operator namespace.
-The Flink Kubernetes operator, by default, will watch all namespaces in the Kubernetes cluster.
-However, to be able to to run Flink jobs in a namespace other than the operator's namespace, you will need to create a service account with the required permissions in that namespace.
+The helm installation will create the required service, role, and role-binding to run Flink jobs in the defined operator namespace.
+The Flink Kubernetes Operator, by default, watches all namespaces in the Kubernetes cluster.
+To run Flink jobs in a namespace other than the operator's namespace, create a service account with the required permissions in that namespace.
 
-The https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-stable/docs/operations/rbac/[upstream documentation] covers the RBAC design and requirements for the Flink Kubernetes operator in detail. 
+The https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-stable/docs/operations/rbac/[Flink documentation] covers the RBAC design and requirements for the Flink Kubernetes Operator in detail. 
 However, you can find an example service, role and role-binding in the `+install/namespace-rbac+` directory which you can use to setup a new application namespace:
 
 [source,bash]
@@ -53,4 +51,4 @@ However, you can find an example service, role and role-binding in the `+install
 kubectl -n <application-namespace> -f install/namespace-rbac
 ----
 
-This will create a `+flink+` service account that you should reference in your `+FlinkDeployment.spec.serviceAccount+` field.
+This creates a `+flink+` service account that must be referenced in the `FlinkDeployment` resource using the `+spec.serviceAccount+` property.

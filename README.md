@@ -19,7 +19,7 @@ _Note_: Refer to the instructions `docs/installation.adoc` to install the Flink 
     ```
     minikube image build . -t flink-sql-runner:latest
     ```
-4. Create an `FlinkDeployment` CR which references the image you just built (`flink-sql-runner:latest`).
+4. Create a `FlinkDeployment` custom resource that references the image you just built (`flink-sql-runner:latest`).
 5. Apply the `FlinkDeployment` to the `flink` namespace. This namespace has the RBAC setup (via helm) to run Flink Job. If you want to run in another namespace then apply the `install/flink-namespace-rbac.yaml` to the chosen namespace.   
 
 ## Building the documentation
@@ -33,7 +33,7 @@ To build a local copy of the docs, you will need [asciidoctor](https://asciidoct
 asciidoctor docs/index.adoc
 ```
 
-This will build `docs/index.html` containing the documentation.
+This builds `docs/index.html` containing the documentation.
 
 ## Developing
 We welcome your contributions to the Flink SQL project! To ensure a smooth collaboration:

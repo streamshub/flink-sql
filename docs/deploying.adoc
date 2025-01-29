@@ -1,10 +1,10 @@
 == Writing Queries
 
-For details on what Flink SQL can do, please refer to the https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/table/overview/[upstream documentation].
+For information on how Flink SQL supports writing queries, please refer to the https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/table/overview/[upstream documentation].
 
 === Using secrets
 
-You can use Kubernetes secrets, with the Flink SQL Runner, to provide security credentials to Flink job for connecting to the source or the target systems.
+You can use Kubernetes secrets with the Flink SQL Runner to provide security credentials to Flink job for connecting to the source or the target systems.
 Secrets can be directly templated in the SQL statements with the following pattern:
 
 [source,yaml]
@@ -15,7 +15,7 @@ Secrets can be directly templated in the SQL statements with the following patte
 === Special Characters
 
 Note that semicolon `+;+` is a special character used as a statement delimiter. If it's part of your SQL statements, make sure it is escaped by `+\\+`. 
-For example, it might be used for `+properties.sasl.jaas.config+` value when using Kafka connector. 
+For example, it might be used when specifying a `+properties.sasl.jaas.config+` value for a  Kafka connector configuration. 
 In this case, it would look something like this:
 
 [source,yaml]
@@ -25,10 +25,11 @@ In this case, it would look something like this:
 
 == Deploying a Flink SQL Query
 
-Your SQL query can be submitted via the `+spec.job.args+` field of the `+FlinkDeployment+` CR.
-It should be formed of a single string within an array literal (`+[ ]+`), https://yaml-multiline.info/[multi-line yaml strings] (via the use of `+|+`,`+>+` characters) are not currently supported. 
-However, within the single string newline, tab and other whitespace characters will be ignored, so queries can be properly formatted.
-See the example below for an illustration of this.
+Your SQL query can be submitted via the `+spec.job.args+` field of the `+FlinkDeployment+` custom resource.
+It should be formed of a single string within an array literal (`+[ ]+`).
+https://yaml-multiline.info/[Multi-line yaml strings] (using `+|+`,`+>+` characters) are not currently supported. 
+However, newlines, tabs, and other whitespace characters within a single string are ignored, so queries can still be well-formatted.
+See the example below for an illustration of the formatting.
 
 .Example FlinkDeployment
 [source,yaml]
