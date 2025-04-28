@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.streamshub</groupId>
         <artifactId>flink-sql</artifactId>
-        <version>0.1.1-SNAPSHOT</version>
+        <version>0.2.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>flink-sql-runner-dist</artifactId>
@@ -17,7 +17,7 @@
             https://dlcdn.apache.org/flink/flink-${flink.version}/flink-${flink.version}-bin-scala_2.12.tgz
         </flink.download.url>
         <flink.download.sha512>
-            c50105a095839c663074d6a242e72d0e27886f584e0d568a89e3cf84b87da2b5cf188e230f65890a4622192ddad49b347d57ea5fe1c3510d27484b64a4b4c415
+            0edeb57f9bc263faa6b817f783596e0370d11c7b2dd9e9bf8ab42b13f6bc55e026e6ba56415252e8a8c3d2b038313453968618dbf72b2391e0a6b54de41354bc
         </flink.download.sha512>
         <!--by default, tar preserved the uid/gid off the build machine, which can be too long for the RHEL image.
         9999 matches the image's user/group-->
@@ -30,7 +30,7 @@
             <plugin>
                 <groupId>io.github.download-maven-plugin</groupId>
                 <artifactId>download-maven-plugin</artifactId>
-                <version>${maven.download.version}</version>
+                <version>${download.maven.version}</version>
                 <executions>
                     <execution>
                         <phase>process-resources</phase>
@@ -58,6 +58,7 @@
                     </descriptors>
                     <overrideGid>${distribution.override.gid}</overrideGid>
                     <overrideUid>${distribution.override.uid}</overrideUid>
+                    <tarLongFileMode>posix</tarLongFileMode>
                 </configuration>
                 <executions>
                     <execution>

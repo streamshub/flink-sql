@@ -19,7 +19,7 @@ _Note_: Refer to the instructions `docs/installation.adoc` to install the Flink 
     ```
     minikube image build . -t flink-sql-runner:latest
     ```
-4. Create a `FlinkDeployment` custom resource that references the image you just built (`flink-sql-runner:latest`).
+4. Create a `FlinkDeployment` custom resource that references the image you just built (`flink-sql-runner:latest`) and set the `imagePullPolicy` to `Never`.
 5. Apply the `FlinkDeployment` to the `flink` namespace. This namespace has the RBAC setup (via helm) to run Flink Job. If you want to run in another namespace then apply the `install/flink-namespace-rbac.yaml` to the chosen namespace.   
 
 ## Building the documentation
