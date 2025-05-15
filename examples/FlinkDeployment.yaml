@@ -3,7 +3,7 @@ kind: FlinkDeployment
 metadata:
   name: flink-deployment-example
 spec:
-  image: quay.io/streamshub/flink-sql-runner:v0.0.1
+  image: quay.io/streamshub/flink-sql-runner:0.2.0
   imagePullPolicy: Always
   flinkVersion: v2_0
   flinkConfiguration:
