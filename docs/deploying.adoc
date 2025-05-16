@@ -39,8 +39,8 @@ kind: FlinkDeployment
 metadata:
   name: standalone-etl
 spec:
-  image: quay.io/streamshub/flink-sql-runner:0.1.0
-  flinkVersion: v1_20
+  image: quay.io/streamshub/flink-sql-runner:0.2.0
+  flinkVersion: v2_0
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "1"
   serviceAccount: flink

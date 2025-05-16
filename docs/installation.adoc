@@ -8,7 +8,7 @@ The operator installs a webhook that requires CertManager to function, so this n
 
 [source, bash]
 ----
-kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.15.2/cert-manager.yaml
+kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.17.2/cert-manager.yaml
 ----
 [source, bash]
 ----
@@ -21,7 +21,7 @@ First add the `+helm+` repository, if you haven't already:
 
 [source, bash]
 ----
-helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.10.0/
+helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.11.0/
 ----
 
 Then install the helm chart for operator 1.10:
