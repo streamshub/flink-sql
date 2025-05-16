@@ -12,15 +12,15 @@
     <artifactId>flink-sql-runner</artifactId>
 
     <properties>
-        <maven.compiler.release>11</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-bom</artifactId>
-                <version>3.26.3</version>
+                <version>${assertj-bom.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -101,7 +101,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>${maven.shade.version}</version>
                 <executions>
                     <!-- Run shade goal on package phase -->
                     <execution>
