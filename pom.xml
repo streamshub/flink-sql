@@ -18,7 +18,9 @@
     <maven.assembly.version>3.7.1</maven.assembly.version>
     <download.maven.version>2.0.0</download.maven.version>
     <maven.surefire.version>3.5.3</maven.surefire.version>
+    <maven.shade.version>3.6.0</maven.shade.version>
     <jacoco.version>0.8.13</jacoco.version>
+    <assertj-bom.version>3.27.3</assertj-bom.version>
 
     <!-- Project dependency version -->
     <flink.version>2.0.0</flink.version>
