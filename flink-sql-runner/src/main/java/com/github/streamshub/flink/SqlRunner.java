@@ -47,12 +47,12 @@ public class SqlRunner {
     public static void main(String[] args) throws Exception {
         List<String> statements;
 
-        String sql_from_env_var = System.getenv(CUSTOM_SQL_ENV_VAR_KEY);
+        String sqlFromEnvVar = System.getenv(CUSTOM_SQL_ENV_VAR_KEY);
 
         if (args.length == 1) {
             statements = parseStatements(args[0]);
-        } else if (sql_from_env_var != null) {
-            statements = parseStatements(sql_from_env_var);
+        } else if (sqlFromEnvVar != null) {
+            statements = parseStatements(sqlFromEnvVar);
         } else {
             throw new Exception(String.format("Exactly 1 argument or '%s' environment variable is expected.", CUSTOM_SQL_ENV_VAR_KEY));
         }
