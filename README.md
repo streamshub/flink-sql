@@ -9,7 +9,7 @@ An application to execute Flink SQL jobs.
 
 ## Building and running Flink SQL Runner
 
-_Note_: Refer to the instructions `docs/installation.adoc` to install the Flink Kubernetes Operator.
+_Note_: Refer to the instructions [`docs/installation.adoc`](docs/installation.adoc) to install the Flink Kubernetes Operator.
 
 1. Build application
     ```
