@@ -44,7 +44,7 @@ public class SqlRunner {
     private static final Pattern STATEMENT_SET_PATTERN =
             Pattern.compile("(EXECUTE STATEMENT SET BEGIN.*?END;)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         List<String> statements;
 
         String sqlFromEnvVar = System.getenv(CUSTOM_SQL_ENV_VAR_KEY);
@@ -62,7 +62,7 @@ public class SqlRunner {
                 .inStreamingMode()
                 .build();
         var tableEnv = TableEnvironment.create(settings);
-        LOG.debug("TableEnvironment config: " + tableEnv.getConfig().toMap());
+        LOG.debug("TableEnvironment config: {}", tableEnv.getConfig().toMap());
 
         Interpolator ksr = new KubernetesSecretInterpolator();
         for (String statement : statements) {
@@ -113,7 +113,7 @@ public class SqlRunner {
             }
         }
 
-        if (statementSet.length() > 0) {
+        if (!statementSet.isEmpty()) {
             statements.add(statementSet);
         }
 
