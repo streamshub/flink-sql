@@ -34,7 +34,6 @@ public class SqlRunner {
     private static final Logger LOG = LoggerFactory.getLogger(SqlRunner.class);
 
     private static final String STATEMENT_DELIMITER = ";"; // a statement should end with `;`
-    private static final String LINE_DELIMITER = "\n";
 
     private static final Pattern SET_STATEMENT_PATTERN =
             Pattern.compile("SET\\s+'(\\S+)'\\s+=\\s+'(.*)';", Pattern.CASE_INSENSITIVE);
@@ -118,7 +117,7 @@ public class SqlRunner {
         if (!content.endsWith(STATEMENT_DELIMITER)) {
             formatted.append(STATEMENT_DELIMITER);
         }
-        formatted.append(LINE_DELIMITER);
+        formatted.append(System.lineSeparator());
         return formatted.toString();
     }
 }
