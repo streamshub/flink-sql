@@ -54,7 +54,7 @@ public class SqlRunner {
         } else if (sqlFromEnvVar != null) {
             statements = parseStatements(sqlFromEnvVar);
         } else {
-            throw new Exception(String.format("Exactly 1 argument or '%s' environment variable is expected.", CUSTOM_SQL_ENV_VAR_KEY));
+            throw new IllegalArgumentException(String.format("Exactly 1 argument or '%s' environment variable is expected.", CUSTOM_SQL_ENV_VAR_KEY));
         }
 
         EnvironmentSettings settings = EnvironmentSettings
