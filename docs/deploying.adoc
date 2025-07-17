@@ -25,8 +25,14 @@ In this case, it would look something like this:
 
 == Deploying a Flink SQL Query
 
-Your SQL query can be submitted via the `+spec.job.args+` field of the `+FlinkDeployment+` custom resource.
-It should be formed of a single string within an array literal (`+[ ]+`).
+Your SQL query can be submitted via either:
+
+* The `+spec.job.args+` field of the `+FlinkDeployment+` custom resource.
+* The `+SQL_STATEMENTS+` environment variable of the main `+FlinkDeployment+` container.
+
+=== `+spec.job.args+`
+
+Your SQL query should be formed of a single string within an array literal (`+[ ]+`).
 https://yaml-multiline.info/[Multi-line yaml strings] (using `+|+`,`+>+` characters) are not currently supported. 
 However, newlines, tabs, and other whitespace characters within a single string are ignored, so queries can still be well-formatted.
 See the example below for an illustration of the formatting.
@@ -75,6 +81,80 @@ spec:
           SELECT * 
           FROM orders;
         "]
+    parallelism: 1
+    upgradeMode: stateless
+----
+
+=== `+SQL_STATEMENTS+`
+
+This environment variable is useful for providing an SQL query from a `ConfigMap` or `Secret`.
+
+For example, like this:
+
+.Example SQL file
+[source,sql]
+----
+-- standalone-etl.sql
+CREATE TABLE orders (
+  order_number BIGINT,
+  price DECIMAL(32,2),
+  buyer ROW<first_name STRING,
+  last_name STRING>,
+  last_name STRING,
+  order_time TIMESTAMP(3)
+) WITH (
+  'connector' = 'datagen'
+);
+
+CREATE TABLE print_table
+WITH (
+  'connector' = 'print'
+)
+LIKE orders;
+
+INSERT INTO print_table
+  SELECT *
+  FROM orders;
+----
+
+.Example ConfigMap from SQL file
+[source,bash]
+----
+kubectl create configmap -n flink standalone-etl-sql \
+  --from-file=SQL_STATEMENTS=standalone-etl.sql
+----
+
+.Example FlinkDeployment using SQL from ConfigMap
+[source,yaml]
+----
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: standalone-etl
+spec:
+  image: quay.io/streamshub/flink-sql-runner:0.2.0
+  flinkVersion: v2_0
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "1"
+  serviceAccount: flink
+  podTemplate:
+    kind: Pod
+    spec:
+      containers:
+        - name: flink-main-container
+          envFrom:
+            - configMapRef:
+                name: standalone-etl-sql
+  jobManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  taskManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  job:
+    jarURI: local:///opt/streamshub/flink-sql-runner.jar
     parallelism: 1
     upgradeMode: stateless
 ----
