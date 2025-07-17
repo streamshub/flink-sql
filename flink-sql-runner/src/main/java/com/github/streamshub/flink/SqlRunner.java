@@ -33,6 +33,8 @@ public class SqlRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(SqlRunner.class);
 
+    private static final String CUSTOM_SQL_ENV_VAR_KEY = "SQL_STATEMENTS";
+
     private static final String STATEMENT_DELIMITER = ";"; // a statement should end with `;`
 
     private static final Pattern SET_STATEMENT_PATTERN =
@@ -42,11 +44,17 @@ public class SqlRunner {
             Pattern.compile("(EXECUTE STATEMENT SET BEGIN.*?END;)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
-            throw new Exception("Exactly 1 argument is expected.");
-        }
+        List<String> statements;
 
-        var statements = parseStatements(args[0]);
+        String sqlFromEnvVar = System.getenv(CUSTOM_SQL_ENV_VAR_KEY);
+
+        if (args.length == 1) {
+            statements = parseStatements(args[0]);
+        } else if (sqlFromEnvVar != null) {
+            statements = parseStatements(sqlFromEnvVar);
+        } else {
+            throw new IllegalArgumentException(String.format("Exactly 1 argument or '%s' environment variable is expected.", CUSTOM_SQL_ENV_VAR_KEY));
+        }
 
         EnvironmentSettings settings = EnvironmentSettings
                 .newInstance()
