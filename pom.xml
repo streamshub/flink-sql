@@ -65,6 +65,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven.surefire.version}</version>
+          <configuration>
+            <environmentVariables>
+              <SQL_STATEMENTS>CREATE TABLE from_pom (id INT);</SQL_STATEMENTS>
+            </environmentVariables>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
