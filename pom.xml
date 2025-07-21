@@ -21,6 +21,7 @@
     <maven.shade.version>3.6.0</maven.shade.version>
     <jacoco.version>0.8.13</jacoco.version>
     <assertj-bom.version>3.27.3</assertj-bom.version>
+    <maven.properties.plugin.version>1.2.1</maven.properties.plugin.version>
 
     <!-- Project dependency version -->
     <flink.version>2.0.0</flink.version>
