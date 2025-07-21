@@ -1,6 +1,15 @@
-= Integrate Prometheus into Flink cluster
+= Monitoring metrics
 
-NOTE: The following code blocks assume you are in the `+examples/metrics/+` directory.
+[NOTE]
+====
+This section assumes the following:
+
+- You are in the `+examples/metrics/+` directory.
+- You have deployed the https://github.com/streamshub/flink-sql-examples/tree/8057d63691100a2de09d6964444694cde249d376/tutorials/recommendation-app[`recomendatiion-app` example].
+====
+
+== Integrating Prometheus into Flink cluster
+
 
 After deploying a Flink cluster, you can then deploy Prometheus to monitor
 metrics from the job manager and task manager by following these steps:
@@ -55,7 +64,7 @@ image:images/job_metric.png[img.png]
 +
 image:images/task_metric.png[img.png]
 
-== Integrate Prometheus into Flink cluster deployed on OpenShift
+=== Integrating Prometheus into Flink cluster deployed on OpenShift
 
 Since OpenShift comes with Prometheus built-in and pre-configured,
 we can integrate with it by deploying a `+PodMonitor+` CR
@@ -83,3 +92,30 @@ image:images/openshift_operator.png[img.png]
 image:images/openshift_jobmanager.png[img.png]
 +
 image:images/openshift_taskmanager.png[img.png]
+
+== Integrating Grafana into Flink cluster
+
+After deploying Prometheus, you can deploy Grafana to create dashboards and visualize the data.
+
+. Install the provided Grafana server, service, datasources, and example Flink dashboard:
++
+[source,bash]
+----
+kubectl apply -f grafana-install -n flink
+----
++
+NOTE: `grafana-datasources.yaml` is pre-configured to connect to the Prometheus server from
+the previous section.
++
+. Expose the Grafana UI with a port-forward rule:
++
+[source,bash]
+----
+kubectl port-forward svc/grafana-service -n flink 3000
+----
++
+NOTE: The default Grafana username and password are both `admin`.
+
+Upon logging in to the Grafana UI, you should be greeted with the provided example Flink dashboard.
+
+image:images/example_flink_grafana_dashboard.png[img.png]
