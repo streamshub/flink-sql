@@ -1,97 +1,112 @@
 package com.github.streamshub.flink;
 
-import java.util.List;
-
+import com.github.streamshub.flink.util.PropertiesReader;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.table.api.EnvironmentSettings;
+import org.apache.flink.table.api.TableConfig;
+import org.apache.flink.table.api.TableEnvironment;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.io.IOException;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class SqlRunnerTest {
 
-    @Test
-    void testParseStatements() {
+    private TableEnvironment tableEnv;
+    private Configuration configuration;
 
-        String statements = "CREATE TABLE Table1 ( field STRING, field1 STRING ) WITH ( 'connector' = 'datagen'); " +
-                "CREATE TABLE Table2 WITH ( 'connector' = 'print') LIKE Table1; " +
-                "INSERT INTO Table2 SELECT * FROM Table1;";
+    private MockedStatic<TableEnvironment> mockedTableEnvStatic;
+    private MockedConstruction<KubernetesSecretInterpolator> mockedInterpolatorConstruction;
 
-        List<String> expected = List.of(
-                "CREATE TABLE Table1 ( field STRING, field1 STRING ) WITH ( 'connector' = 'datagen');",
-                "CREATE TABLE Table2 WITH ( 'connector' = 'print') LIKE Table1;",
-                "INSERT INTO Table2 SELECT * FROM Table1;");
+    @BeforeEach
+    void setUp() {
+        // Manually create mocks for each object in the chain
+        tableEnv = Mockito.mock(TableEnvironment.class);
+        TableConfig tableConfig = Mockito.mock(TableConfig.class);
+        configuration = Mockito.mock(Configuration.class);
 
-        List<String> actual = SqlRunner.parseStatements(statements);
-        assertEquals(expected, actual);
+        // Mock the static `TableEnvironment.create(...)` call
+        mockedTableEnvStatic = mockStatic(TableEnvironment.class);
+        mockedTableEnvStatic.when(() -> TableEnvironment.create(any(EnvironmentSettings.class))).thenReturn(tableEnv);
+
+        // Explicitly mock each step of the chain
+        when(tableEnv.getConfig()).thenReturn(tableConfig);
+        when(tableConfig.getConfiguration()).thenReturn(configuration);
+
+        // Mock the construction of KubernetesSecretInterpolator
+        mockedInterpolatorConstruction = mockConstruction(KubernetesSecretInterpolator.class,
+            (mock, context) -> when(mock.interpolate(anyString()))
+                .thenAnswer(invocation -> invocation.getArgument(0)));
+    }
+
+    @AfterEach
+    void tearDown() {
+        mockedTableEnvStatic.close();
+        mockedInterpolatorConstruction.close();
     }
 
     @Test
-    void testParseStatementsTrailingSemiColon() {
-        String statements = "CREATE TABLE Table1 ( field STRING, field1 STRING ) WITH ( 'connector' = 'datagen'); " +
-                "CREATE TABLE Table2 WITH ( 'connector' = 'print') LIKE Table1; " +
-                "INSERT INTO Table2 SELECT * FROM Table1";
+    void testReadsFromEnvironmentVariable() throws IOException {
+        SqlRunner.main(new String[0]);
+        PropertiesReader reader = new PropertiesReader("test.properties");
 
-        List<String> expected = List.of(
-                "CREATE TABLE Table1 ( field STRING, field1 STRING ) WITH ( 'connector' = 'datagen');",
-                "CREATE TABLE Table2 WITH ( 'connector' = 'print') LIKE Table1;",
-                "INSERT INTO Table2 SELECT * FROM Table1;");
-
-        List<String> actual = SqlRunner.parseStatements(statements);
-        assertEquals(expected, actual);
+        verify(tableEnv).executeSql(reader.getProperty("sql.test.statement"));
     }
 
     @Test
-    void testParseStatementsWithSecrets () {
-        String statements = "CREATE TABLE Table1 ( message STRING ) WITH ( 'connector' = 'kafka', " +
-                        "'topic' = 'test', " +
-                        "'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9093', " +
-                        "'properties.security.protocol' = 'SASL_PLAINTEXT', " +
-                        "'properties.sasl.mechanism' = 'PLAIN', " +
-                        "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required username=\"{{secret:flink/mysecret/username}}\" password=\"{{secret:flink/mysecret/password}}\"\\;'); " +
-                "CREATE TABLE print_table ( message STRING ) WITH ('connector' = 'print'); " +
-                "INSERT INTO print_table SELECT * FROM Table1; ";
+    void testPrioritizesArgumentOverEnvVar() {
+        String sqlFromArg = "CREATE TABLE from_arg (name VARCHAR);";
+        SqlRunner.main(new String[]{sqlFromArg});
 
-        List<String> expected = List.of(
-                "CREATE TABLE Table1 ( message STRING ) WITH ( 'connector' = 'kafka', " +
-                        "'topic' = 'test', " +
-                        "'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9093', " +
-                        "'properties.security.protocol' = 'SASL_PLAINTEXT', " +
-                        "'properties.sasl.mechanism' = 'PLAIN', " +
-                        "'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required username=\"{{secret:flink/mysecret/username}}\" password=\"{{secret:flink/mysecret/password}}\";');",
-                "CREATE TABLE print_table ( message STRING ) WITH ('connector' = 'print');",
-                "INSERT INTO print_table SELECT * FROM Table1;");
-
-        List<String> actual = SqlRunner.parseStatements(statements);
-        assertEquals(expected, actual);
-
+        verify(tableEnv).executeSql("CREATE TABLE from_arg (name VARCHAR);");
+        verify(tableEnv, never()).executeSql("CREATE TABLE from_pom (id INT);");
     }
 
     @Test
-    void testParseStatementSet() {
-        String statementSet =
-                "CREATE TABLE KafkaTable ( message STRING ) WITH ('connector' = 'kafka'" +
-                        "  'topic' = 'user_behavior'," +
-                        "  'properties.bootstrap.servers' = 'localhost:9092'," +
-                        "  'properties.group.id' = 'testGroup'," +
-                        "  'scan.startup.mode' = 'earliest-offset'," +
-                        "  'format' = 'csv'); " +
-                "CREATE TABLE print_table ( message STRING ) WITH ('connector' = 'print'); " +
-                "CREATE TABLE print_table2 ( message STRING ) WITH ('connector' = 'print'); " +
-                "EXECUTE STATEMENT SET BEGIN INSERT INTO print_table SELECT * FROM KafkaTable; " +
-                "INSERT INTO print_table2 SELECT * FROM print_table; END; ";
+    void testHandlesSetStatements() {
+        String sql = "SET 'table.planner' = 'blink'; CREATE TABLE t1 (id INT);";
+        SqlRunner.main(new String[]{sql});
 
-        List<String> expected = List.of(
-                "CREATE TABLE KafkaTable ( message STRING ) WITH ('connector' = 'kafka'" +
-                        "  'topic' = 'user_behavior'," +
-                        "  'properties.bootstrap.servers' = 'localhost:9092'," +
-                        "  'properties.group.id' = 'testGroup'," +
-                        "  'scan.startup.mode' = 'earliest-offset'," +
-                        "  'format' = 'csv');",
-                "CREATE TABLE print_table ( message STRING ) WITH ('connector' = 'print');",
-                "CREATE TABLE print_table2 ( message STRING ) WITH ('connector' = 'print');",
-                "EXECUTE STATEMENT SET BEGIN INSERT INTO print_table SELECT * FROM KafkaTable; " +
-                "INSERT INTO print_table2 SELECT * FROM print_table; END;");
+        verify(configuration).setString("table.planner", "blink");
+        verify(tableEnv).executeSql("CREATE TABLE t1 (id INT);");
+        verify(tableEnv, never()).executeSql("SET 'table.planner' = 'blink';");
+    }
 
-        List<String> actual = SqlRunner.parseStatements(statementSet);
-        assertEquals(expected, actual);
+    @Test
+    void testUsesInterpolator() {
+        String originalSql = "CREATE TABLE t1 (pass '${secret:my-secret}');";
+        String interpolatedSql = "CREATE TABLE t1 (pass 'super_secret_value');";
+
+        mockedInterpolatorConstruction.close();
+        mockedInterpolatorConstruction = mockConstruction(KubernetesSecretInterpolator.class,
+            (mock, context) -> when(mock.interpolate(originalSql)).thenReturn(interpolatedSql));
+
+        SqlRunner.main(new String[]{originalSql});
+
+        verify(tableEnv).executeSql(interpolatedSql);
+    }
+
+    @Test
+    void testHandlesStatementSet() {
+        String sql = "CREATE TABLE t1 (id INT); EXECUTE STATEMENT SET BEGIN INSERT INTO t2 VALUES (1); END; CREATE TABLE t3 (name VARCHAR);";
+        SqlRunner.main(new String[]{sql});
+
+        verify(tableEnv).executeSql("CREATE TABLE t1 (id INT);");
+        verify(tableEnv).executeSql("EXECUTE STATEMENT SET BEGIN INSERT INTO t2 VALUES (1); END;");
+        verify(tableEnv).executeSql("CREATE TABLE t3 (name VARCHAR);");
+        verify(tableEnv, times(3)).executeSql(anyString());
     }
 }

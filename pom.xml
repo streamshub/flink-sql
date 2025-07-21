@@ -21,6 +21,7 @@
     <maven.shade.version>3.6.0</maven.shade.version>
     <jacoco.version>0.8.13</jacoco.version>
     <assertj-bom.version>3.27.3</assertj-bom.version>
+    <maven.properties.plugin.version>1.2.1</maven.properties.plugin.version>
 
     <!-- Project dependency version -->
     <flink.version>2.0.0</flink.version>
@@ -33,6 +34,10 @@
     <!-- Test only dependencies -->
     <mockito.version>5.18.0</mockito.version>
     <jupiter.version>5.13.3</jupiter.version>
+
+    <!-- Test properties -->
+    <sql.test.statement>CREATE TABLE from_pom (id INT);</sql.test.statement>
+
     <!-- Sonar settings -->
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>streamshub</sonar.organization>
@@ -65,6 +70,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven.surefire.version}</version>
+          <configuration>
+            <environmentVariables>
+              <SQL_STATEMENTS>${sql.test.statement}</SQL_STATEMENTS>
+            </environmentVariables>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
