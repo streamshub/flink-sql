@@ -1,5 +1,6 @@
 package com.github.streamshub.flink;
 
+import com.github.streamshub.flink.util.PropertiesReader;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableConfig;
@@ -10,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.io.IOException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -23,7 +26,6 @@ import static org.mockito.Mockito.when;
 class SqlRunnerTest {
 
     private TableEnvironment tableEnv;
-    private TableConfig tableConfig;
     private Configuration configuration;
 
     private MockedStatic<TableEnvironment> mockedTableEnvStatic;
@@ -33,7 +35,7 @@ class SqlRunnerTest {
     void setUp() {
         // Manually create mocks for each object in the chain
         tableEnv = Mockito.mock(TableEnvironment.class);
-        tableConfig = Mockito.mock(TableConfig.class);
+        TableConfig tableConfig = Mockito.mock(TableConfig.class);
         configuration = Mockito.mock(Configuration.class);
 
         // Mock the static `TableEnvironment.create(...)` call
@@ -57,10 +59,11 @@ class SqlRunnerTest {
     }
 
     @Test
-    void testReadsFromEnvironmentVariable() {
+    void testReadsFromEnvironmentVariable() throws IOException {
         SqlRunner.main(new String[0]);
+        PropertiesReader reader = new PropertiesReader("test.properties");
 
-        verify(tableEnv).executeSql("CREATE TABLE from_pom (id INT);");
+        verify(tableEnv).executeSql(reader.getProperty("sql.test.statement"));
     }
 
     @Test
