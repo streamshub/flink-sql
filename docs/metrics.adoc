@@ -5,7 +5,7 @@
 This section assumes the following:
 
 - You are in the `+examples/metrics/+` directory.
-- You have deployed the https://github.com/streamshub/flink-sql-examples/tree/8057d63691100a2de09d6964444694cde249d376/tutorials/recommendation-app[`recomendatiion-app` example].
+- You have deployed the https://github.com/streamshub/flink-sql-examples/tree/8057d63691100a2de09d6964444694cde249d376/tutorials/recommendation-app[`+recomendatiion-app+` example].
 ====
 
 == Integrating Prometheus into Flink cluster
@@ -78,7 +78,7 @@ we can integrate with it by deploying a `+PodMonitor+` CR
 for the Flink cluster:
 
 . Install the pre-configured `+PodMonitor+`, `+Service+`, and
-`+serviceMonitor+` CRs:
+`+ServiceMonitor+` CRs:
 +
 [source,bash]
 ----
@@ -91,8 +91,8 @@ example. Please update the `+selector.matchLabels+` field in
 `+flink-monitor.yaml+` if you are running a different example.
 . It takes around 5 minutes for the Prometheus operator to update
 the config for the Prometheus server. After that, you can query the metrics
-in the OpenShift UI as described
-https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/monitoring/accessing-metrics[here].
+in the OpenShift UI by navigating to the
+https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/monitoring/accessing-metrics["Observe" section] in the left nav bar.
 +
 image:images/openshift_operator.png[img.png]
 +
@@ -120,7 +120,7 @@ kubectl apply -f grafana-install/kubernetes_grafana_example/grafana-datasources.
 kubectl apply -f grafana-install -n flink
 ----
 +
-NOTE: `grafana-datasources.yaml` is pre-configured to connect to the Prometheus server from
+NOTE: `+grafana-datasources.yaml+` is pre-configured to connect to the Prometheus server from
 the previous section.
 
 ==== OpenShift
@@ -128,7 +128,7 @@ the previous section.
 Since our Grafana deployment will need to fetch data from OpenShift's Prometheus instance,
 we need to create a `+ServiceAccount+` with the right permissions and pass its token to Grafana.
 
-. Create a `ServiceAccount` with permissions for monitoring:
+. Create a `+ServiceAccount+` with permissions for monitoring:
 +
 [source,bash]
 ----
@@ -150,7 +150,7 @@ cat grafana-install/openshift_grafana_example/grafana-datasources.yaml | envsubs
 +
 NOTE: In production, you should https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/#bound-service-account-tokens[bind the token to an object].
 +
-. Install the provided Grafana server, service, and example Flink dashboard:
+. Install the provided Grafana server, `+Service+`, and example Flink dashboard:
 +
 [source,bash]
 ----
@@ -166,7 +166,7 @@ After confirming the Grafana deployment is running, we can expose it with a port
 kubectl port-forward svc/grafana-service -n flink 3000
 ----
 
-NOTE: The default Grafana username and password are both `admin`.
+NOTE: The default Grafana username and password are both `+admin+`.
 
 Upon logging in to the Grafana UI, you should be greeted with the provided example Flink dashboard.
 
