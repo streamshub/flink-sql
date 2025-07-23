@@ -10,44 +10,49 @@ This section assumes the following:
 
 == Integrating Prometheus into Flink cluster
 
+=== Installing Prometheus
 
-After deploying a Flink cluster, you can then deploy Prometheus to monitor
+Depending on whether you're using Kubernetes or OpenShift, you will have to
+follow different steps to set up Prometheus.
+
+==== Kubernetes
+
+After deploying a Flink cluster, you can deploy Prometheus to monitor
 metrics from the job manager and task manager by following these steps:
 
-. Update the provided Prometheus configuration with the IP address of Flink pods
-to scrape from:
-+
-*Linux:*
+. Export the IP addresses of the Flink pods to scrape from:
 +
 [source,bash]
 ----
-sed -i s/OPERATOR/$(kubectl get pods -lapp.kubernetes.io/name=flink-kubernetes-operator -n flink -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f1)/g prometheus-install/prometheus-config.yaml
+export OPERATOR_POD_IP=`kubectl get pods -lapp.kubernetes.io/name=flink-kubernetes-operator -n flink -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f1`
 
-sed -i s/JOB_MANAGER/$(kubectl get pods -lapp=recommendation-app -n flink -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f1)/g prometheus-install/prometheus-config.yaml
+export JOB_MANAGER_POD_IP=`kubectl get pods -lapp=recommendation-app -n flink -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f1`
 
-sed -i s/TASK_MANAGER/$(kubectl get pods -lapp=recommendation-app -n flink -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f2)/g prometheus-install/prometheus-config.yaml
+export TASK_MANAGER_POD_IP=`kubectl get pods -lapp=recommendation-app -n flink -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f2`
 ----
 +
-*MacOS*
-+
-[source,bash]
-----
-sed -i '' s/JOB_MANAGER/$(kubectl get pods -lapp.kubernetes.io/name=flink-kubernetes-operator -n flink -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f1)/g prometheus-install/prometheus-config.yaml
+[NOTE]
+====
+Here we assume there’s only:
 
-sed -i '' s/JOB_MANAGER/$(kubectl get pods -lapp=recommendation-app -n flink -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f1)/g prometheus-install/prometheus-config.yaml
+* 1 Flink kubernetes operator
+* 1 job
+manager
+* 1 task manager
 
-sed -i '' s/TASK_MANAGER/$(kubectl get pods -lapp=recommendation-app -n flink -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f2)/g prometheus-install/prometheus-config.yaml
-----
+If you deployed more than that, please update the `+prometheus-config.yaml+` file.
+====
 +
-NOTE: Here we assume there’s only 1 Flink kubernetes operator, 1 job
-manager, and 1 task manager. If you deployed more than that, please
-update the `+prometheus-config.yaml+` file.
-. Install the provided Prometheus server, configuration, and service CRs:
+. Install the provided Prometheus server, configuration, and `+Service+` CRs:
 +
 [source,bash]
 ----
-kubectl apply -f prometheus-install -n flink
+for f in prometheus-install/kubernetes_monitor_example/*.yaml;
+do
+  envsubst < $f | kubectl apply -f -;
+done
 ----
++
 . Expose the Prometheus UI with a port-forward rule:
 +
 [source,bash]
@@ -64,13 +69,15 @@ image:images/job_metric.png[img.png]
 +
 image:images/task_metric.png[img.png]
 
-=== Integrating Prometheus into Flink cluster deployed on OpenShift
+==== OpenShift
+
+NOTE: Make sure you have enabled https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/monitoring/configuring-user-workload-monitoring#enabling-monitoring-for-user-defined-projects-uwm_preparing-to-configure-the-monitoring-stack-uwm[monitoring for user-defined projects].
 
 Since OpenShift comes with Prometheus built-in and pre-configured,
 we can integrate with it by deploying a `+PodMonitor+` CR
 for the Flink cluster:
 
-. Install the pre-configured `+PodMonitor+`, `+service+`, and
+. Install the pre-configured `+PodMonitor+`, `+Service+`, and
 `+serviceMonitor+` CRs:
 +
 [source,bash]
@@ -78,14 +85,14 @@ for the Flink cluster:
 oc apply -f prometheus-install/openshift_monitor_example -n flink
 ----
 +
-Note: These CRs are pre-configured to select the Flink kubernetes operator
+NOTE: These CRs are pre-configured to select the Flink kubernetes operator
 and `+FlinkDeployment+` created as part of the `+recommendation-app+`
 example. Please update the `+selector.matchLabels+` field in
 `+flink-monitor.yaml+` if you are running a different example.
 . It takes around 5 minutes for the Prometheus operator to update
 the config for the Prometheus server. After that, you can query the metrics
 in the OpenShift UI as described
-https://docs.openshift.com/container-platform/4.16/observability/monitoring/managing-metrics.html#querying-metrics-for-all-projects-as-an-administrator_managing-metrics[here].
+https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/monitoring/accessing-metrics[here].
 +
 image:images/openshift_operator.png[img.png]
 +
@@ -95,12 +102,21 @@ image:images/openshift_taskmanager.png[img.png]
 
 == Integrating Grafana into Flink cluster
 
+Depending on whether you're using Kubernetes or OpenShift, you will have to
+follow different steps to set up Grafana.
+
+=== Installing Grafana
+
+==== Kubernetes
+
 After deploying Prometheus, you can deploy Grafana to create dashboards and visualize the data.
 
 . Install the provided Grafana server, service, datasources, and example Flink dashboard:
 +
 [source,bash]
 ----
+kubectl apply -f grafana-install/kubernetes_grafana_example/grafana-datasources.yaml -n flink
+
 kubectl apply -f grafana-install -n flink
 ----
 +
