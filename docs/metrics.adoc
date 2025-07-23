@@ -4,8 +4,8 @@
 ====
 This section assumes the following:
 
-- You are in the `+examples/metrics/+` directory.
-- You have deployed the https://github.com/streamshub/flink-sql-examples/tree/8057d63691100a2de09d6964444694cde249d376/tutorials/recommendation-app[`+recomendatiion-app+` example].
+* You are in the `+examples/metrics/+` directory.
+* You have deployed the https://github.com/streamshub/flink-sql-examples/tree/main/tutorials/recommendation-app[`+recomendatiion-app+` example] (in the `+flink+` namespace).
 ====
 
 == Integrating Prometheus into Flink cluster
@@ -20,44 +20,42 @@ follow different steps to set up Prometheus.
 After deploying a Flink cluster, you can deploy Prometheus to monitor
 metrics from the job manager and task manager by following these steps:
 
-. Export the IP addresses of the Flink pods to scrape from:
+. Install the https://github.com/prometheus-operator/prometheus-operator[CoreOS Prometheus Operator]:
 +
 [source,bash]
 ----
-export OPERATOR_POD_IP=`kubectl get pods -lapp.kubernetes.io/name=flink-kubernetes-operator -n flink -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f1`
+curl -s https://raw.githubusercontent.com/coreos/prometheus-operator/v0.84.0/bundle.yaml > prometheus-operator-deployment.yaml
 
-export JOB_MANAGER_POD_IP=`kubectl get pods -lapp=recommendation-app -n flink -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f1`
+# Specify to install operator into 'flink' namespace
+sed -E -i '/[[:space:]]*namespace: [a-zA-Z0-9-]*$/s/namespace:[[:space:]]*[a-zA-Z0-9-]*$/namespace: flink/' prometheus-operator-deployment.yaml
 
-export TASK_MANAGER_POD_IP=`kubectl get pods -lapp=recommendation-app -n flink -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f2`
+kubectl create -f prometheus-operator-deployment.yaml
 ----
 +
-[NOTE]
-====
-Here we assume there’s only:
-
-* 1 Flink kubernetes operator
-* 1 job
-manager
-* 1 task manager
-
-If you deployed more than that, please update the `+prometheus-config.yaml+` file.
-====
-+
-. Install the provided Prometheus server, configuration, and `+Service+` CRs:
+. Install the following pre-configured CRs:
 +
 [source,bash]
 ----
-for f in prometheus-install/kubernetes_monitor_example/*.yaml;
-do
-  envsubst < $f | kubectl apply -f -;
-done
+kubectl apply -f prometheus-install/ -n flink
+----
++
+.. `+Service+` and `+ServiceMonitor+` for the Flink kubernetes operator.
+.. `+PodMonitor+` for the `+recommendation-app+` Flink JobManager and TaskManager.
++
+. Also, install the following Kubernetes-specific pre-configured CRs:
+.. `+Prometheus+` and `+Service+` for the Prometheus instance.
+.. `+ServiceAccount+`, `+Role+`, and `+RoleBinding+` for allowing Prometheus to scrape targets.
++
+[source,bash]
+----
+kubectl apply -f prometheus-install/kubernetes/ -n flink
 ----
 +
 . Expose the Prometheus UI with a port-forward rule:
 +
 [source,bash]
 ----
-kubectl port-forward svc/prometheus-service -n flink 9090
+kubectl port-forward svc/prometheus-service 9090 -n flink
 ----
 . Now, you can monitor the metrics in the Flink kubernetes operator, job
 manager, or task manager via the Prometheus UI accessible at
@@ -75,20 +73,18 @@ NOTE: Make sure you have enabled https://docs.redhat.com/en/documentation/opensh
 
 Since OpenShift comes with Prometheus built-in and pre-configured,
 we can integrate with it by deploying a `+PodMonitor+` CR
-for the Flink cluster:
+for the Flink cluster.
 
-. Install the pre-configured `+PodMonitor+`, `+Service+`, and
-`+ServiceMonitor+` CRs:
+. Install the following pre-configured CRs:
 +
 [source,bash]
 ----
-oc apply -f prometheus-install/openshift_monitor_example -n flink
+kubectl apply -f prometheus-install/ -n flink
 ----
 +
-NOTE: These CRs are pre-configured to select the Flink kubernetes operator
-and `+FlinkDeployment+` created as part of the `+recommendation-app+`
-example. Please update the `+selector.matchLabels+` field in
-`+flink-monitor.yaml+` if you are running a different example.
+.. `+Service+` and `+ServiceMonitor+` for the Flink kubernetes operator.
+.. `+PodMonitor+` for the `+recommendation-app+` Flink JobManager and TaskManager.
++
 . It takes around 5 minutes for the Prometheus operator to update
 the config for the Prometheus server. After that, you can query the metrics
 in the OpenShift UI by navigating to the
@@ -111,13 +107,13 @@ follow different steps to set up Grafana.
 
 After deploying Prometheus, you can deploy Grafana to create dashboards and visualize the data.
 
-. Install the provided Grafana server, service, datasources, and example Flink dashboard:
+. Install the pre-configured Grafana server, `+Service+`, data sources, and example Flink dashboard:
 +
 [source,bash]
 ----
-kubectl apply -f grafana-install/kubernetes_grafana_example/grafana-datasources.yaml -n flink
+kubectl apply -f grafana-install/kubernetes/grafana-datasources.yaml -n flink
 
-kubectl apply -f grafana-install -n flink
+kubectl apply -f grafana-install/ -n flink
 ----
 +
 NOTE: `+grafana-datasources.yaml+` is pre-configured to connect to the Prometheus server from
@@ -145,16 +141,16 @@ oc adm policy add-cluster-role-to-user cluster-monitoring-view -z grafana-sa
 ----
 export PROMETHEUS_TOKEN=`oc -n openshift-user-workload-monitoring create token grafana-sa`
 
-cat grafana-install/openshift_grafana_example/grafana-datasources.yaml | envsubst | oc apply -n flink -f -
+cat grafana-install/openshift/grafana-datasources.yaml | envsubst | oc apply -n flink -f -
 ----
 +
 NOTE: In production, you should https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/#bound-service-account-tokens[bind the token to an object].
 +
-. Install the provided Grafana server, `+Service+`, and example Flink dashboard:
+. Install the pre-configured Grafana server, `+Service+`, and example Flink dashboard:
 +
 [source,bash]
 ----
-oc apply -f grafana-install -n flink
+oc apply -f grafana-install/ -n flink
 ----
 
 === Viewing the example dashboard
@@ -163,7 +159,7 @@ After confirming the Grafana deployment is running, we can expose it with a port
 
 [source,bash]
 ----
-kubectl port-forward svc/grafana-service -n flink 3000
+kubectl port-forward svc/grafana-service 3000 -n flink
 ----
 
 NOTE: The default Grafana username and password are both `+admin+`.

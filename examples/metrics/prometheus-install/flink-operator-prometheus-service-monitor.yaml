@@ -2,7 +2,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: flink-service-monitor
+  name: flink-operator-prometheus-service-monitor
 spec:
   endpoints:
     - interval: 10s
