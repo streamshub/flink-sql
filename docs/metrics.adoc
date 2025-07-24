@@ -69,7 +69,25 @@ image:images/task_metric.png[img.png]
 
 ==== OpenShift
 
-NOTE: Make sure you have enabled https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/monitoring/configuring-user-workload-monitoring#enabling-monitoring-for-user-defined-projects-uwm_preparing-to-configure-the-monitoring-stack-uwm[monitoring for user-defined projects].
+[NOTE]
+====
+Make sure you have enabled https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/monitoring/configuring-user-workload-monitoring#enabling-monitoring-for-user-defined-projects-uwm_preparing-to-configure-the-monitoring-stack-uwm[monitoring for user-defined projects].
+E.g. like this:
+
+[source,bash]
+----
+oc apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+data:
+  config.yaml: |
+    enableUserWorkload: true
+EOF
+----
+====
 
 Since OpenShift comes with Prometheus built-in and pre-configured,
 we can integrate with it by deploying a `+PodMonitor+` CR
