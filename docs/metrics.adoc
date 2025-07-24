@@ -97,7 +97,7 @@ for the Flink cluster.
 +
 [source,bash]
 ----
-kubectl apply -f prometheus-install/ -n flink
+oc apply -f prometheus-install/ -n flink
 ----
 +
 .. `+Service+` and `+ServiceMonitor+` for the Flink kubernetes operator.
