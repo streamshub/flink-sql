@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus-server
+  labels:
+    app: prometheus-server
+spec:
+  serviceAccountName: prometheus-service-account
+  version: v3.5.0
+  podMonitorSelector:
+    matchLabels:
+      app: flink-pod-monitor
+  serviceMonitorSelector:
+    matchLabels:
+      app: flink-operator-prometheus-service-monitor

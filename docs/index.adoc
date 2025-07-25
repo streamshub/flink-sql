@@ -3,3 +3,4 @@
 include::overview.adoc[leveloffset=1]
 include::installation.adoc[leveloffset=1]
 include::deploying.adoc[leveloffset=1]
+include::metrics.adoc[leveloffset=1]
