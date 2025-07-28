@@ -33,7 +33,7 @@
 
     <!-- Test only dependencies -->
     <mockito.version>5.18.0</mockito.version>
-    <jupiter.version>5.13.3</jupiter.version>
+    <jupiter.version>5.13.4</jupiter.version>
 
     <!-- Test properties -->
     <sql.test.statement>CREATE TABLE from_pom (id INT);</sql.test.statement>
