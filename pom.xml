@@ -32,7 +32,7 @@
     <flink.kafka.connector.version>4.0.0-2.0</flink.kafka.connector.version>
 
     <!-- Test only dependencies -->
-    <mockito.version>5.18.0</mockito.version>
+    <mockito.version>5.19.0</mockito.version>
     <jupiter.version>5.13.4</jupiter.version>
 
     <!-- Test properties -->
