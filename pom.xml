@@ -29,7 +29,7 @@
     <log4j.version>2.25.1</log4j.version>
     <fabric8.kubernetes-client.version>7.3.1</fabric8.kubernetes-client.version>
     <flink.avro.confluent.registry.version>2.0.0</flink.avro.confluent.registry.version>
-    <flink.kafka.connector.version>4.0.0-2.0</flink.kafka.connector.version>
+    <flink.kafka.connector.version>4.0.1-2.0</flink.kafka.connector.version>
 
     <!-- Test only dependencies -->
     <mockito.version>5.18.0</mockito.version>
