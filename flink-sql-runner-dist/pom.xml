@@ -90,6 +90,12 @@
             <artifactId>flink-sql-connector-kafka</artifactId>
             <version>${flink.kafka.connector.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.streamshub</groupId>
+            <artifactId>shaded-strimzi-kafka-oauth-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
 </project>

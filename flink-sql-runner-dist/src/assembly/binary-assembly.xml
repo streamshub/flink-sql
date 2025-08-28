@@ -16,6 +16,12 @@
         </fileSet>
     </fileSets>
     <dependencySets>
+        <dependencySet>
+            <outputDirectory>/flink/lib/</outputDirectory>
+            <includes>
+                <include>com.github.streamshub:shaded-strimzi-kafka-oauth-client</include>
+            </includes>
+        </dependencySet>
         <!--the job is put in its own directory to distinguish it from upstream optional dependencies-->
         <dependencySet>
             <outputDirectory>/streamshub/</outputDirectory>
