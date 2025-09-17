@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/ubi9/ubi:9.5 AS stage
 WORKDIR /opt
-COPY flink-sql-runner-dist/target/flink-sql-runner-dist-0.4.0.tar.gz flink-sql-runner-dist.tgz
+COPY flink-sql-runner-dist/target/flink-sql-runner-dist-0.5.0-SNAPSHOT.tar.gz flink-sql-runner-dist.tgz
 RUN tar -xzf flink-sql-runner-dist.tgz -C /opt --strip-components=1
 
 FROM registry.access.redhat.com/ubi9/openjdk-17-runtime:1.22
