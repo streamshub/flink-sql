@@ -14,13 +14,13 @@
     <maven.compiler.release>17</maven.compiler.release>
 
     <!-- Maven plugin versions -->
-    <maven.compiler.version>3.14.0</maven.compiler.version>
+    <maven.compiler.version>3.14.1</maven.compiler.version>
     <maven.assembly.version>3.7.1</maven.assembly.version>
     <download.maven.version>2.0.0</download.maven.version>
     <maven.surefire.version>3.5.4</maven.surefire.version>
     <maven.shade.version>3.6.1</maven.shade.version>
     <jacoco.version>0.8.13</jacoco.version>
-    <assertj-bom.version>3.27.4</assertj-bom.version>
+    <assertj-bom.version>3.27.5</assertj-bom.version>
     <maven.properties.plugin.version>1.2.1</maven.properties.plugin.version>
 
     <!-- Project dependency version -->
@@ -33,7 +33,7 @@
     <strimzi.kafka-oauth-client.version>0.17.0</strimzi.kafka-oauth-client.version>
 
     <!-- Test only dependencies -->
-    <mockito.version>5.19.0</mockito.version>
+    <mockito.version>5.20.0</mockito.version>
     <jupiter.version>5.13.4</jupiter.version>
 
     <!-- Test properties -->
