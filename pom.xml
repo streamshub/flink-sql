@@ -19,14 +19,14 @@
     <download.maven.version>2.0.0</download.maven.version>
     <maven.surefire.version>3.5.4</maven.surefire.version>
     <maven.shade.version>3.6.1</maven.shade.version>
-    <jacoco.version>0.8.13</jacoco.version>
-    <assertj-bom.version>3.27.5</assertj-bom.version>
+    <jacoco.version>0.8.14</jacoco.version>
+    <assertj-bom.version>3.27.6</assertj-bom.version>
     <maven.properties.plugin.version>1.2.1</maven.properties.plugin.version>
 
     <!-- Project dependency version -->
     <flink.version>2.1.0</flink.version>
     <slf4j.version>2.0.17</slf4j.version>
-    <log4j.version>2.25.1</log4j.version>
+    <log4j.version>2.25.2</log4j.version>
     <fabric8.kubernetes-client.version>7.4.0</fabric8.kubernetes-client.version>
     <flink.avro.confluent.registry.version>2.0.0</flink.avro.confluent.registry.version>
     <flink.kafka.connector.version>4.0.1-2.0</flink.kafka.connector.version>
@@ -34,7 +34,7 @@
 
     <!-- Test only dependencies -->
     <mockito.version>5.20.0</mockito.version>
-    <jupiter.version>5.13.4</jupiter.version>
+    <jupiter.version>6.0.0</jupiter.version>
 
     <!-- Test properties -->
     <sql.test.statement>CREATE TABLE from_pom (id INT);</sql.test.statement>
