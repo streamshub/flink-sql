@@ -48,7 +48,7 @@ jobs:
           push: false
           file: Dockerfile
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           # use token so that the created PR will trigger other actions, default GITHUB_TOKEN does not do this
           token: ${{ secrets.RELEASE_TOKEN }}
