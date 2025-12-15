@@ -88,7 +88,7 @@ jobs:
 
       ## Attach the target directory for use in Sonar analysis
       - name: Attach Build Output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: target
           path: |
